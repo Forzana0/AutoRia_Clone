@@ -1,0 +1,6 @@
+@AutoRia_HostAddress = http://localhost:5117
+
+GET {{AutoRia_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
