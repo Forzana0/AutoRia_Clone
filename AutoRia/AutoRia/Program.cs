@@ -27,9 +27,12 @@ builder.Services
     .AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+// builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 await IdentitySeeder.SeedAsync(app.Services);
 
