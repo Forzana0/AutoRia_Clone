@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace AutoRia.Domain.Entities.Idenity;
+namespace AutoRia.Data.Entities.Identity;
 
 public class UserEntity : IdentityUser<int>
 {

@@ -1,8 +1,8 @@
-﻿using AutoRia.Domain.Entities.Idenity;
+﻿using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AutoRia.Domain.Seed;
+namespace AutoRia.Data.Seed;
 
 public static class IdentitySeeder
 {

@@ -1,9 +1,9 @@
-﻿using AutoRia.Domain.Entities.Idenity;
+﻿using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AutoRia.Domain;
+namespace AutoRia.Data.Context;
 
 public class AppDbAutoRiaContext : IdentityDbContext<UserEntity, RoleEntity, int,
     IdentityUserClaim<int>, UserRoleEntity, IdentityUserLogin<int>,

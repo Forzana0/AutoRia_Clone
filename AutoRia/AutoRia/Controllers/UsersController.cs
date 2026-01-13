@@ -1,5 +1,5 @@
-﻿using AutoRia.Domain;
-using AutoRia.Domain.Entities.Idenity;
+﻿using AutoRia.Data.Context;
+using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
