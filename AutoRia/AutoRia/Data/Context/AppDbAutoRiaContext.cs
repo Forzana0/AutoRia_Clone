@@ -1,4 +1,5 @@
-﻿using AutoRia.Data.Entities.Identity;
+﻿using AutoRia.Data.Entities;
+using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,9 @@ public class AppDbAutoRiaContext : IdentityDbContext<UserEntity, RoleEntity, int
         : base(options)
     {
     }
+
+    public DbSet<RegionEntity> Regions { get; set; }
+    public DbSet<CityEntity> Cities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
