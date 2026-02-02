@@ -22,7 +22,7 @@ builder.Services.AddDbContext<AppDbAutoRiaContext>(options =>
 
 // Identity
 builder.Services
-    .AddIdentity<UserEntity, RoleEntity>(options =>
+    .AddIdentity<User, Role>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequireLowercase = false;
@@ -57,7 +57,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Services
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailService, ImageValidator>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAccountsControllerService, AccountsControllerService>();
 
@@ -84,7 +84,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-await IdentitySeeder.SeedAsync(app.Services);
+await Seeder.SeedAsync(app.Services);
 
 app.UseCors("AllowReact");
 app.UseHttpsRedirection();

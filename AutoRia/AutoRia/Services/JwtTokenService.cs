@@ -16,7 +16,7 @@ public class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(UserEntity user, IList<string> roles)
+    public string GenerateToken(User user, IList<string> roles)
     {
         var claims = new List<Claim>
         {

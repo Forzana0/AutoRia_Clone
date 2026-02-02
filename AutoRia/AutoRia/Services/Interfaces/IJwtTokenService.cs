@@ -1,8 +1,9 @@
 ﻿using AutoRia.Data.Entities.Identity;
+using AutoRia.Data.Entities.Identity;
 
-namespace AutoRia.Services.Interfaces;
+namespace WebBack.Services.Interfaces;
 
 public interface IJwtTokenService
 {
-    string GenerateToken(UserEntity user, IList<string> roles);
+    Task<string> CreateTokenAsync(UserEntity user);
 }

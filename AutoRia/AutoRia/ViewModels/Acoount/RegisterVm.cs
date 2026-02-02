@@ -1,9 +1,13 @@
 ﻿namespace AutoRia.ViewModels.Account;
-
 public class RegisterVm
 {
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public string FirstName { get; set; } = null!;
+    public string MiddleName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+    public string City { get; set; } = null!;
+    public IFormFile? Image { get; set; } = null!;
+    public string PhoneNumber { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string UserName { get; set; } = null!;
+    public string Password { get; set; } = null!;
 }

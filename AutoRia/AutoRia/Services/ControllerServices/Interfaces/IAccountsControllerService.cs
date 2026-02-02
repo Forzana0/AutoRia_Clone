@@ -1,10 +1,13 @@
-﻿using AutoRia.ViewModels.Account;
+﻿using AutoRia.Data.Entities.Identity;
+using AutoRia.ViewModels.Account;
+using AutoRia.Data.Entities.Identity;
+using AutoRia.ViewModels.Account;
 
-namespace AutoRia.Services.ControllerServices.Interfaces;
-
-public interface IAccountsControllerService
+namespace WebBack.Services.ControllerServices.Interfaces
 {
-    Task<object> RegisterAsync(RegisterVm model);
-    Task<object> ConfirmEmailAsync(int userId, string token);
-    Task<JwtTokenResponse> SignInAsync(SignInVm model);
+    public interface IAccountsControllerService
+    {
+        Task<UserEntity> SignUpAsync(RegisterVm vm);
+        Task SignOutAsync();
+    }
 }

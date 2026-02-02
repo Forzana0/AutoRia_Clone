@@ -1,6 +1,13 @@
-﻿namespace AutoRia.Data.Entities
+﻿using AutoRia.Data.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AutoRia.Data.Entities
 {
-    public class EngineVolumeEntity
+    [Table("tbl_engine_volumes")]
+    public class EngineVolumeEntity : BaseEntity
     {
+        public float Volume { get; set; }
+
+
     }
 }
