@@ -1,7 +1,7 @@
 ﻿using AutoRia.Data.Entities;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebBack.Data.Entities
+namespace AutoRia.Data.Entities
 {
     [Table("tbl_fuel_types")]
     public class FuelTypesEntity : BaseEntity

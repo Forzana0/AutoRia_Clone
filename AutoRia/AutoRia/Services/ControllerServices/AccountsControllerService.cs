@@ -1,112 +1,152 @@
-﻿using System.Text;
+﻿using AutoMapper;
+using AutoRia.Data.Entities.Identity;
+using AutoRia.ViewModels.Account;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using AutoRia.Constants;
+using AutoRia.Data;
 using AutoRia.Data.Entities.Identity;
 using AutoRia.Services.ControllerServices.Interfaces;
 using AutoRia.Services.Interfaces;
 using AutoRia.ViewModels.Account;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 
-namespace AutoRia.Services.ControllerServices;
+namespace WebBack.Services.ControllerServices;
 
 public class AccountsControllerService : IAccountsControllerService
 {
-    private readonly UserManager<UserEntity> _userManager;
-    private readonly IJwtTokenService _jwtTokenService;
-    private readonly IEmailService _emailService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly CarDbContext context;
+    private readonly UserManager<UserEntity> userManager;
+    private readonly RoleManager<RoleEntity> roleManager; // Add RoleManager to manage roles
+    private readonly IMapper mapper;
+    private readonly IImageService imageService;
+    private readonly ILogger<AccountsControllerService> logger;
+    private readonly SignInManager<UserEntity> signInManager;
 
     public AccountsControllerService(
+        CarDbContext context,
         UserManager<UserEntity> userManager,
-        IJwtTokenService jwtTokenService,
-        IEmailService emailService,
-        IHttpContextAccessor httpContextAccessor)
+        RoleManager<RoleEntity> roleManager, // Inject RoleManager
+        SignInManager<UserEntity> signInManager,
+        IMapper mapper,
+        IImageService imageService,
+        ILogger<AccountsControllerService> logger
+    )
     {
-        _userManager = userManager;
-        _jwtTokenService = jwtTokenService;
-        _emailService = emailService;
-        _httpContextAccessor = httpContextAccessor;
+        this.context = context;
+        this.userManager = userManager;
+        this.roleManager = roleManager; // Initialize RoleManager
+        this.mapper = mapper;
+        this.imageService = imageService;
+        this.logger = logger;
     }
 
-    public async Task<object> RegisterAsync(RegisterVm model)
+    public async Task<UserEntity> SignUpAsync(RegisterVm vm)
     {
-        var user = new UserEntity
-        {
-            UserName = model.Email,
-            Email = model.Email,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            DateCreated = DateTime.UtcNow
-        };
+        UserEntity user = mapper.Map<RegisterVm, UserEntity>(vm);
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+        // Find the city that matches the provided city name
+        var cityEntity = await context.Cities
+            .Include(c => c.Region) // Ensure the region is included
+            .FirstOrDefaultAsync(c => c.Name == vm.City);
 
-        if (!result.Succeeded)
+        if (cityEntity != null)
         {
-            return new { success = false, errors = result.Errors };
+            user.City = cityEntity.Name; // Assign the city entity
+            user.Region = cityEntity.Region.Name; // Assign the region associated with the city
+        }
+        else { user.City = "Вказано не вірно"; user.Region = "Вказано не вірно"; }
+
+
+
+
+
+
+        try
+        {
+            // Check if an image was provided before trying to save it
+            if (vm.Image != null)
+            {
+                user.Photo = await imageService.SaveImageAsync(vm.Image);
+            }
+
+            await CreateUserAsync(user, vm.Password);
         }
 
-        await _userManager.AddToRoleAsync(user, "User");
-
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-        Console.WriteLine("==========================================");
-        Console.WriteLine($"User registered: {user.Email}");
-        Console.WriteLine($"Confirmation token (для Swagger / локального тесту): {encodedToken}");
-        Console.WriteLine("==========================================");
-        Console.WriteLine($"UserId: {user.Id}");
-
-
-        var request = _httpContextAccessor.HttpContext!.Request;
-        var confirmationLink = $"{request.Scheme}://{request.Host}/api/accounts/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        await _emailService.SendEmailAsync(
-            user.Email!,
-            "Підтвердження реєстрації AutoRia",
-            $"<h2>Вітаємо на AutoRia!</h2><p>Натисніть на посилання для підтвердження:</p><a href='{confirmationLink}'>Підтвердити Email</a>"
-        );
-
-        return new { success = true, message = "Реєстрація успішна! Перевірте пошту." };
-    }
-
-    public async Task<object> ConfirmEmailAsync(int userId, string token)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
-            return new { success = false, message = "Користувача не знайдено" };
-
-        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
-        var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
-
-        if (result.Succeeded)
-            return new { success = true, message = "Email підтверджено!" };
-
-        return new { success = false, message = "Помилка підтвердження" };
-    }
-
-    public async Task<JwtTokenResponse> SignInAsync(SignInVm model)
-    {
-        var user = await _userManager.FindByEmailAsync(model.Email);
-
-        if (user == null)
-            throw new UnauthorizedAccessException("Невірний email або пароль");
-
-        if (!await _userManager.IsEmailConfirmedAsync(user))
-            throw new UnauthorizedAccessException("Email не підтверджено");
-
-        var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-        if (!isPasswordValid)
-            throw new UnauthorizedAccessException("Невірний email або пароль");
-
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtTokenService.GenerateToken(user, roles);
-
-        return new JwtTokenResponse
+        catch (Exception ex)
         {
-            Token = token,
-            Email = user.Email!,
-            FirstName = user.FirstName ?? "",
-            LastName = user.LastName ?? ""
-        };
+            logger.LogError(ex, "Error occurred during user registration.");
+
+            // Cleanup the image if user creation fails and it was saved
+            if (user.Photo != null)
+            {
+                imageService.DeleteImageIfExists(user.Photo);
+            }
+
+            // Rethrow the exception to be handled by the controller
+            throw;
+        }
+
+        return user;
+    }
+
+    private async Task CreateUserAsync(UserEntity user, string? password = null)
+    {
+        using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Ensure the role exists before assigning it
+            await EnsureRoleExistsAsync(Roles.User);
+
+            IdentityResult identityResult = await CreateUserInDatabaseAsync(user, password);
+            if (!identityResult.Succeeded)
+            {
+                var errors = string.Join(", ", identityResult.Errors.Select(e => e.Description));
+                throw new Exception($"User creation error: {errors}");
+            }
+
+            identityResult = await userManager.AddToRoleAsync(user, Roles.User);
+            if (!identityResult.Succeeded)
+            {
+                var errors = string.Join(", ", identityResult.Errors.Select(e => e.Description));
+                throw new Exception($"Role assignment error: {errors}");
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            logger.LogError(ex, "Transaction failed during user creation or role assignment.");
+            throw;
+        }
+    }
+
+    private async Task EnsureRoleExistsAsync(string roleName)
+    {
+        var roleExists = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExists)
+        {
+            var roleResult = await roleManager.CreateAsync(new RoleEntity { Name = roleName });
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                throw new Exception($"Role creation error: {errors}");
+            }
+        }
+    }
+
+    private async Task<IdentityResult> CreateUserInDatabaseAsync(UserEntity user, string? password)
+    {
+        if (password is null)
+            return await userManager.CreateAsync(user);
+
+        return await userManager.CreateAsync(user, password);
+    }
+
+    public async Task SignOutAsync()
+    {
+        await signInManager.SignOutAsync();
     }
 }
