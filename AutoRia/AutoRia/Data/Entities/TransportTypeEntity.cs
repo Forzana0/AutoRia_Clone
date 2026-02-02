@@ -4,15 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebBack.Data.Entities
 {
-    [Table("tbl_car_models")]
-    public class CarModelEntity : BaseEntity
+    [Table("tbl_transport_types")]
+    public class TransportTypeEntity : BaseEntity
     {
         [StringLength(255), Required]
         public string Name { get; set; } = null!;
-
-        public int CarBrandId { get; set; }
-
-        public CarBrandEntity CarBrand { get; set; } = null!;
-
     }
 }
