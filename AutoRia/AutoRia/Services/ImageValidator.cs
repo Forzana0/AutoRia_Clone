@@ -1,8 +1,7 @@
 ﻿using AutoRia.Services.Interfaces;
 using SixLabors.ImageSharp;
-using AutoRia.Services.Interfaces;
 
-namespace WebBack.Services
+namespace AutoRia.Services
 {
     public class ImageValidator : IImageValidator
     {

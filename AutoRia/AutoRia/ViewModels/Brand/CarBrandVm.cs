@@ -1,7 +1,6 @@
 ﻿using AutoRia.ViewModels.Model;
-using AutoRia.ViewModels.Model;
 
-namespace WebBack.ViewModels.Brand
+namespace AutoRia.ViewModels.Brand
 {
     public class CarBrandVm
     {

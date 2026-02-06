@@ -1,48 +1,62 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using AutoRia.Data.Entities.Identity;
+using AutoRia.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AutoRia.Data.Entities.Identity;
-using AutoRia.Services.Interfaces;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AutoRia.Services;
 
-public class JwtTokenService : IJwtTokenService
+public class JwtTokenService(
+  UserManager<UserEntity> userManager,
+  IConfiguration configuration
+  ) : IJwtTokenService
 {
-    private readonly IConfiguration _configuration;
-
-    public JwtTokenService(IConfiguration configuration)
+    public async Task<string> CreateTokenAsync(UserEntity user)
     {
-        _configuration = configuration;
+        var key = Encoding.UTF8.GetBytes(
+            configuration["Authentication:Jwt:SecretKey"]
+                ?? throw new NullReferenceException("Authentication:Jwt:SecretKey")
+        );
+
+        int tokenLifetimeInDays = Convert.ToInt32(
+            configuration["Authentication:Jwt:TokenLifetimeInDays"]
+                ?? throw new NullReferenceException("Authentication:Jwt:TokenLifetimeInDays")
+        );
+
+        var signinKey = new SymmetricSecurityKey(key);
+
+        var signinCredential = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
+
+        var jwt = new JwtSecurityToken(
+            signingCredentials: signinCredential,
+            expires: DateTime.Now.AddDays(tokenLifetimeInDays),
+            claims: await GetClaimsAsync(user));
+
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
-    public string GenerateToken(User user, IList<string> roles)
+    private async Task<List<Claim>> GetClaimsAsync(UserEntity user)
     {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email!),
-            new Claim(ClaimTypes.Name, user.UserName!)
+        string userEmail = user.Email
+            ?? throw new NullReferenceException($"User.Email");
+
+        var userRoles = await userManager.GetRolesAsync(user);
+
+        var roleClaims = userRoles
+            .Select(r => new Claim(ClaimTypes.Role, r))
+            .ToList();
+
+        var claims = new List<Claim> {
+            new ("id", user.Id.ToString()),
+            new ("email", userEmail),
+            new ("firstName", user.FirstName),
+            new ("lastName", user.LastName),
+            new ("photo", user.Photo)
         };
+        claims.AddRange(roleClaims);
 
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)
-        );
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return claims;
     }
 }

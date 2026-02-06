@@ -1,7 +1,6 @@
 ﻿using AutoRia.Data.Entities.Identity;
-using AutoRia.Data.Entities.Identity;
 
-namespace WebBack.Services.Interfaces;
+namespace AutoRia.Services.Interfaces;
 
 public interface IJwtTokenService
 {

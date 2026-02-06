@@ -3,8 +3,6 @@ using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using AutoRia.Data.Entities;
-using AutoRia.Data.Entities.Identity;
 
 namespace AutoRia.Data
 {

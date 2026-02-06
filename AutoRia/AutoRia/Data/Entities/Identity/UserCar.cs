@@ -1,4 +1,5 @@
-﻿using AutoRia.Data.Entities.Identity;
+﻿using AutoRia.Data.Entities;
+using AutoRia.Data.Entities.Identity;
 
 namespace AutoRia.Data.Entities.Identity
 {

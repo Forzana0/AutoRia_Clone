@@ -1,10 +1,7 @@
-﻿
-using AutoRia.ViewModels.Car;
+﻿using AutoRia.ViewModels.Car;
 using AutoRia.SearchReauestClasses;
-using AutoRia.ViewModels;
-using AutoRia.ViewModels.Car;
 
-namespace WebBack.Services.ControllerServices.Interfaces
+namespace AutoRia.Services.ControllerServices.Interfaces
 {
     public interface ICarControllerService
     {

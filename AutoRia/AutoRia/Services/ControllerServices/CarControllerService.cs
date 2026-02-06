@@ -5,15 +5,12 @@ using AutoRia.Data.Entities.Identity;
 using AutoRia.ViewModels.Car;
 using Microsoft.EntityFrameworkCore;
 using AutoRia.Data;
-using AutoRia.Data.Entities;
-using AutoRia.Data.Entities.Identity;
 using AutoRia.SearchReauestClasses;
 using AutoRia.Services.ControllerServices.Interfaces;
 using AutoRia.Services.Interfaces;
 using AutoRia.ViewModels;
-using AutoRia.ViewModels.Car;
 
-namespace WebBack.Services.ControllerServices
+namespace AutoRia.Services.ControllerServices
 {
     public class CarControllerService : ICarControllerService
     {
