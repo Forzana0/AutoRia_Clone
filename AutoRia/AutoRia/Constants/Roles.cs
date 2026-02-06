@@ -1,4 +1,4 @@
-﻿namespace WebBack.Constants;
+﻿namespace AutoRia.Constants;
 
 public static class Roles
 {

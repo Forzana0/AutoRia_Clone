@@ -3,9 +3,8 @@ using AutoMapper.QueryableExtensions;
 using AutoRia.ViewModels.Pagination;
 using Microsoft.EntityFrameworkCore;
 using AutoRia.Services.Interfaces;
-using AutoRia.ViewModels.Pagination;
 
-namespace WebBack.Services.PaginationServices.Base;
+namespace AutoRia.Services.PaginationServices.Base;
 
 public abstract class PaginationService<EntityType, EntityVmType, PaginationVmType>(
 IMapper mapper

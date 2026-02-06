@@ -1,17 +1,15 @@
 ﻿using AutoMapper;
-using AutoRia.Data.Entities.Identity;
-using AutoRia.ViewModels.Account;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using AutoRia.Constants;
 using AutoRia.Data;
 using AutoRia.Data.Entities.Identity;
 using AutoRia.Services.ControllerServices.Interfaces;
 using AutoRia.Services.Interfaces;
 using AutoRia.ViewModels.Account;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace WebBack.Services.ControllerServices;
+namespace AutoRia.Services.ControllerServices;
 
 public class AccountsControllerService : IAccountsControllerService
 {

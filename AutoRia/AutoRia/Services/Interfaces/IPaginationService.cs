@@ -1,7 +1,6 @@
 ﻿using AutoRia.ViewModels.Pagination;
-using AutoRia.ViewModels.Pagination;
 
-namespace WebBack.Services.Interfaces;
+namespace AutoRia.Services.Interfaces;
 
 public interface IPaginationService<EntityVmType, PaginationVmType> where PaginationVmType : PaginationVm
 {

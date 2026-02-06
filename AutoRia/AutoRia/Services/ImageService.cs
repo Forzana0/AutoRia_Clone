@@ -2,9 +2,8 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
-using AutoRia.Services.Interfaces;
 
-namespace WebBack.Services;
+namespace AutoRia.Services;
 
 public class ImageService(
     IConfiguration configuration

@@ -8,19 +8,11 @@ using AutoRia.ViewModels.Model;
 using AutoRia.ViewModels.NumberOfSeats;
 using AutoRia.ViewModels.TransmissionType;
 using AutoRia.ViewModels.TransportType;
-using AutoRia.Data.Entities;
 using AutoRia.Data.Entities.Identity;
 using AutoRia.ViewModels.Account;
-using AutoRia.ViewModels.BodyType;
-using AutoRia.ViewModels.Brand;
-using AutoRia.ViewModels.EngineVolume;
-using AutoRia.ViewModels.Model;
-using AutoRia.ViewModels.NumberOfSeats;
 using AutoRia.ViewModels.Region_City;
-using AutoRia.ViewModels.TransmissionType;
-using AutoRia.ViewModels.TransportType;
 
-namespace WebBack.ViewModels.Car
+namespace AutoRia.ViewModels.Car
 {
     public class CarVm
     {

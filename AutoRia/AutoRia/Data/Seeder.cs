@@ -1,17 +1,16 @@
-﻿using AutoRia.Data.Entities;
+﻿using AutoRia.Data;
+using AutoRia.Data.Entities;
 using AutoRia.Data.Entities.Identity;
+using AutoRia.Services.Interfaces;
 using Bogus;
 using Bogus.DataSets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-using AutoRia.Data.Entities;
-using AutoRia.Data.Entities.Identity;
 using AutoRia.Services;
-using AutoRia.Services.Interfaces;
 using AutoRia.ViewModels.Car;
 
-namespace WebBack.Data
+namespace AutoRia.Data
 {
     public static class Seeder
     {

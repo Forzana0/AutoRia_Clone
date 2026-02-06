@@ -1,95 +1,123 @@
-using AutoRia.Data.Context;
+using AutoRia.Data;
 using AutoRia.Data.Entities.Identity;
-using AutoRia.Data.Seed;
 using AutoRia.Services;
 using AutoRia.Services.ControllerServices;
 using AutoRia.Services.ControllerServices.Interfaces;
 using AutoRia.Services.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AutoRia.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
-builder.Services.AddDbContext<AppDbAutoRiaContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+builder.Services.AddDbContext<CarDbContext>(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
+
+builder.Services
+    .AddIdentity<UserEntity, RoleEntity>(options =>
+    {
+        options.Stores.MaxLengthForKeys = 128;
+
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+    })
+    .AddEntityFrameworkStores<CarDbContext>()
+    .AddDefaultTokenProviders();
+
+var singinKey = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(
+        builder.Configuration["Authentication:Jwt:SecretKey"]
+            ?? throw new NullReferenceException("Authentication:Jwt:SecretKey")
     )
 );
 
-// Identity
 builder.Services
-    .AddIdentity<User, Role>(options =>
+    .AddAuthentication(options =>
     {
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = false;
-        options.User.RequireUniqueEmail = true;
-        options.SignIn.RequireConfirmedEmail = true;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddEntityFrameworkStores<AppDbAutoRiaContext>()
-    .AddDefaultTokenProviders();
-
-// JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"];
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
-    };
-});
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            IssuerSigningKey = singinKey,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
-// Services
-builder.Services.AddScoped<IEmailService, ImageValidator>();
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IAccountsControllerService, AccountsControllerService>();
-
-// HTTP Context
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReact", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddAutoMapper(typeof(AppMapProfile));
+builder.Services.AddTransient<IImageService, ImageService>();
+
+
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddTransient<IImageValidator, ImageValidator>();
+//builder.Services.AddTransient<IExistingEntityCheckerService, ExistingEntityCheckerService>();
+
+builder.Services.AddTransient<IAccountsControllerService, AccountsControllerService>();
+
+
+
+builder.Services.AddTransient<ICarControllerService, CarControllerService>();
+//builder.Services.AddTransient<IPaginationService<PizzaVm, PizzaFilterVm>, PizzaPaginationService>();
+
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+string imagesDirPath = Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ImagesDir"]);
 
-await Seeder.SeedAsync(app.Services);
+if (!Directory.Exists(imagesDirPath))
+{
+    Directory.CreateDirectory(imagesDirPath);
+}
 
-app.UseCors("AllowReact");
-app.UseHttpsRedirection();
-app.UseAuthentication();
+
+app.UseCors(
+    configuration => configuration
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesDirPath),
+    RequestPath = "/images"
+});
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseAuthorization();
+
 app.MapControllers();
+
+app.SeedData();
 
 app.Run();

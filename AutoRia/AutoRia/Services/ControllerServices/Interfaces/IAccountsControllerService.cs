@@ -1,9 +1,7 @@
 ﻿using AutoRia.Data.Entities.Identity;
 using AutoRia.ViewModels.Account;
-using AutoRia.Data.Entities.Identity;
-using AutoRia.ViewModels.Account;
 
-namespace WebBack.Services.ControllerServices.Interfaces
+namespace AutoRia.Services.ControllerServices.Interfaces
 {
     public interface IAccountsControllerService
     {
