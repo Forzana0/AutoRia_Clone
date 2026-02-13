@@ -1,22 +1,22 @@
-import {createRoot} from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import {Provider} from "react-redux";
-import {store} from "./store";
-import {ThemeProvider} from "./context/ThemeContext.tsx";
-import {AppWrapper} from "./components/common/PageMeta.tsx";
-import {GoogleOAuthProvider} from "@react-oauth/google";
+// Libraries
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
 
-createRoot(document.getElementById('root')!).render(
-    <>
-        <ThemeProvider>
-            <AppWrapper>
-                <Provider store={store}>
-                    <GoogleOAuthProvider clientId="688315354046-isd3q5qkjaj88uaj9oudrldsf18bm592.apps.googleusercontent.com">
-                        <App/>
-                    </GoogleOAuthProvider>
-                </Provider>
-            </AppWrapper>
-        </ThemeProvider>
-    </>,
-)
+// Styles
+import './index.css';
+
+// Store
+import store from './redux/store.ts';
+
+// App
+import App from './App.tsx';
+
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <Provider store={store}>
+            <App />
+        </Provider>
+    </React.StrictMode>,
+);
