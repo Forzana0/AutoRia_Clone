@@ -1,0 +1,96 @@
+.font-karla{
+    font-family: "Karla", sans-serif;
+    color: #FFFFFF;
+}
+
+.footer-container{
+    background-color: #8C9BA9;
+    border-radius: 11px 11px 0 0;
+}
+
+.box-gray {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: 100%;
+    height: auto;
+    padding-bottom: 5vw;
+    height: 510px;
+    padding-left: 10%;
+}
+
+.footer-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.2fr;
+    gap: 80px;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.main-menu,
+.footer-button{
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 22px;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.footer-button
+{
+    font-family: 'Montserrat', sans-serif;
+     color: #FFFFFF;
+    padding: 13px 28px;
+    border: 2px solid #FFFFFF;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.footer-sections ul {
+    font-size: 16px;
+    font-weight: 400;
+    font-style: normal;
+    list-style-type: none;
+    line-height: 19px;
+    padding: 0;
+    margin: 0 ;
+}
+
+.phone{
+    font-size: 28px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 33px;
+    margin: 0;
+}
+
+.social-media-container{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.contacts-container{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 346px;
+    position: absolute;
+    gap:60px;
+}
+
+.indent {
+  text-indent: 20px; 
+}
+
+.paper-icon{
+    width: 20px;
+}
+
+.contact-section{
+    display: flex;
+    flex-direction: row;
+}

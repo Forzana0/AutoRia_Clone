@@ -1,85 +1,75 @@
-import React from "react";
-import './App.css'
-import {BrowserRouter as Router, Route, Routes} from "react-router";
-// Layouts
-const UserLayout = React.lazy(() => import("./layout/user/UserLayout.tsx"));
-const AdminLayout = React.lazy(() => import("./layout/admin/AdminLayout.tsx"));
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Pages
-const UserHomePage = React.lazy(() => import("./pages/OtherPage/UserHomePage.tsx"));
-const DashboardHome = React.lazy(() => import("./pages/Dashboard/DashboardHome.tsx"));
-const NotFound = React.lazy(() => import("./pages/OtherPage/NotFound.tsx"));
+import MainSearchPage from "./pages/MainSearchPage/MainSearchPage.tsx";
+import AccountPage from "./pages/AccountPage/AccountPage.tsx";
+import AuthPage from "./pages/AuthPage/AuthPage.tsx";
 
-const CategoriesListPage = React.lazy(() => import("./pages/Categories"));
-const CategoriesCreatePage = React.lazy(() => import("./pages/Categories/create"));
-const CategoriesEditPage = React.lazy(() => import("./pages/Categories/edit"));
+// Account Page Components
+import MyAds from "./pages/AccountPage/AccountPageComponents/MyAds/MyAds.tsx";
+import Favorites from "./pages/AccountPage/AccountPageComponents/Favorites/Favorites.tsx";
 
-const LoginPage = React.lazy(() => import("./pages/Account/Login"));
-const RegistrationPage = React.lazy(() => import("./pages/Account/register"));
-const ForgotPasswordPage = React.lazy(() => import("./pages/Account/ForgotPassword"));
-const ForgotSuccessPage = React.lazy(() => import("./pages/Account/ForgotSuccess.tsx"));
-const ResetPasswordPage = React.lazy(() => import("./pages/Account/ResetPassword"));
-
-const ProductsPage = React.lazy(() => import("./pages/Products/List"));
-const AdminProductListPage = React.lazy(() => import("./admin/pages/Products/List/AdminProductListPage.tsx"));
-const AdminProductCreatePage = React.lazy(() => import("./admin/pages/Products/Create/AdminProductCreatePage.tsx"));
-const UserListPage = React.lazy(() => import("./admin/pages/Users"));
-
-// Components
-import RequireAdmin from "./components/ProtectedRoute/RequireAdmin.tsx";
-
+import Login from './pages/AuthPage/AuthPageComponents/Login/Login.tsx';
+import Register from './pages/AuthPage/AuthPageComponents/Register/Register.tsx';
+import HomeContent from './pages/MainSearchPage/MainSearchPageComponents/HomeContent/HomeContent.tsx';
+import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent.tsx';
+import EditAccountPage from "./pages/EditAccountPage/EditAccountPage.tsx";
+import ProfileEditing from "./pages/EditAccountPage/EditAccountPageComponents/ProfileEditing/ProfileEditing.tsx";
+import EditPassword
+    from "./pages/EditAccountPage/EditAccountPageComponents/EditAccountPageComponents/EditPassword/EditPassword.tsx";
+import PasswordChange
+    from "./pages/EditAccountPage/EditAccountPageComponents/EditAccountPageComponents/EditPassword/EditPasswordComponents/PasswordChange/PasswordChange.tsx";
+import PasswordForgot
+    from "./pages/EditAccountPage/EditAccountPageComponents/EditAccountPageComponents/EditPassword/EditPasswordComponents/PasswordForgot/PasswordForgot.tsx";
+import PasswordRecovery
+    from "./pages/EditAccountPage/EditAccountPageComponents/EditAccountPageComponents/EditPassword/EditPasswordComponents/PasswordRecovery/PasswordRecovery.tsx";
+import PostAdPage from "./pages/PostAdPage/PostAdPahe.tsx";
+import AdForm from "./pages/PostAdPage/PostAdPageComponents/AdForm/AdForm.tsx";
+import NewsPage from "./pages/NewsPage/NewsPage.tsx";
+import HomeNews from "./pages/NewsPage/NewsPageComponents/HomeNews/HomeNews.tsx";
+import ProductPage from "./pages/ProductPage/ProductPage.tsx";
 
 
 const App: React.FC = () => {
-
     return (
-        <>
-            <Router>
-                <React.Suspense fallback={<div>Завантаження...</div>}>
-                <Routes>
-                    {/*<Route index element={<UserLayout>}></Route>*/}
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<MainSearchPage />}>
+                    <Route index element={<HomeContent />} />
+                    <Route path="home" element={<HomeContent />} />
+                    <Route path="search" element={<SearchContent />} />
+                </Route>
+                <Route path="/auth" element={<AuthPage />}>
+                    <Route index element={<Register />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
+                </Route>
+                <Route path="/account" element={<AccountPage />}>
+                    <Route index element={<MyAds />} />
+                    <Route path="ads" element={<MyAds />} />
+                    <Route path="favorites" element={<Favorites />} />
 
-                    <Route path="/" element={<UserLayout/>}>
-                        <Route index element={<UserHomePage/>}/>
-
-                        {/*<Route path={'login'} element={<LoginPage/>} />*/}
-                        <Route path={'login'} element={<LoginPage />} />
-                        <Route path={'forgot-password'} element={<ForgotPasswordPage/>} />
-                        <Route path="forgot-success" element={<ForgotSuccessPage />} />
-                        <Route path="reset-password" element={<ResetPasswordPage />} />
-                        <Route path="register" element={<RegistrationPage />} />
-                        <Route path="products" element={<ProductsPage/>}/>
+                </Route>
+                <Route path="/edit-account" element={<EditAccountPage />}>
+                    <Route index element={<ProfileEditing/>} />
+                    <Route path="profile" element={<ProfileEditing/>} />
+                    <Route path="password" element={<EditPassword />}>
+                        <Route path="forgot" element={<PasswordForgot/>} />
                     </Route>
+                </Route>
+                <Route path="/post" element={<PostAdPage />}>
+                    <Route index element={<AdForm/>} />
+                    <Route path="ad" element={<AdForm/>} />
+                </Route>
+                <Route path="/news" element={<NewsPage />}>
+                    <Route index element={<HomeNews />} />
+                    <Route path="home" element={<HomeNews />} />
+                </Route>
+                <Route path="/carproduct/:id" element={<ProductPage/>}></Route>
+            </Routes>
+        </BrowserRouter>
+    );
+};
 
-                    <Route path="admin" element={<RequireAdmin/>}>
-                        <Route element={<AdminLayout/>}>
-                            <Route path="home" element={<DashboardHome/>}/>
-
-                            <Route path="categories">
-                                <Route index element={<CategoriesListPage/>}/>
-                                <Route path={'create'} element={<CategoriesCreatePage/>}/>
-                                <Route path={'edit/:id'} element={<CategoriesEditPage/>}/>
-                            </Route>
-
-                            <Route path="products">
-                                <Route index element={<AdminProductListPage/>}/>
-                                <Route path={'create'} element={<AdminProductCreatePage/>}/>
-                            </Route>
-
-                            <Route path="users">
-                                <Route index element={<UserListPage />}></Route>
-                            </Route>
-
-                        </Route>
-                    </Route>
-
-
-                    <Route path="*" element={<NotFound/>}/>
-                </Routes>
-                </React.Suspense>
-            </Router>
-        </>
-    )
-}
-
-export default App
+export default App;
