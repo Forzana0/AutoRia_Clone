@@ -1,82 +1,72 @@
-// Libraries
-import React, {useEffect, useState} from 'react';
-
-// Interfaces
-import { Car } from "../../../../../../interfaces/Car";
-
-// Components
+import React, { useState } from 'react';
+import './CarCarousel.css';
 import CarCard from '../../../../../../components/carCard/CarCard';
 
-// Styles
-import '../CarCarousel/CarCarousel.css';
-
-// Define props interface
-interface CarCarouselProps {
-    cars: Car[];
+interface Car {
+    id: number | string;
+    title: string;
+    location?: string;
+    mileage?: string;
+    transmission?: string;
+    fuel?: string;
+    priceUsd: number;
+    priceUah?: number;
+    image?: string;
 }
 
+interface CarCarouselProps {
+    cars?: Car[];
+}
 
+const ITEMS_PER_PAGE = 3;
 
-const CarCarousel: React.FC<CarCarouselProps> = ({ cars }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    const handleNext = () => {
-        if (currentIndex < cars.length - 4) {
-            setCurrentIndex(currentIndex + 4);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 4);
-        }
-    };
-
-    const [imageSrc, setImageSrc] = useState("/images/left.png");
-    const [rotation, setRotation] = useState("");
-    useEffect(() => {
-        const updateImageSrc = () => {
-            if (window.innerWidth <= 1620) {
-                setImageSrc("/images/left.png"); // Change to small image
-                setRotation("rotate(180deg)"); // Apply rotation for smaller screens
-            } else {
-                setImageSrc("/images/right.png"); // Use the default image
-                setRotation("");
-            }
-        };
-
-        // Initial check when the component loads
-        updateImageSrc();
-
-        // Listen for window resize events
-        window.addEventListener('resize', updateImageSrc);
-
-        // Clean up the event listener on component unmount
-        return () => {
-            window.removeEventListener('resize', updateImageSrc);
-        };
-    }, []);
-
+const CarCarousel: React.FC<CarCarouselProps> = ({ cars = [] }) => {
+    const [page, setPage] = useState(0);
+    const total = Math.ceil(cars.length / ITEMS_PER_PAGE);
+    const visible = cars.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
     return (
-        <>
-            <button onClick={handlePrev} className="btn-none-styles" disabled={currentIndex === 0}>
-                <img src="/images/left.png" alt="Left" />
-            </button>
-            <div className="cars-container">
-                {cars.slice(currentIndex, currentIndex + 4).map((car, index) => (
-                    <CarCard key={index} {...car} />
-                ))}
+        <section className="car-carousel-section">
+            <div className="section-header">
+                <h2 className="section-title">ТОП-пропозиції</h2>
+                {cars.length > ITEMS_PER_PAGE && (
+                    <div className="carousel-controls">
+                        <button
+                            className="carousel-btn"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="m15 18-6-6 6-6" />
+                            </svg>
+                        </button>
+                        <button
+                            className="carousel-btn"
+                            onClick={() => setPage(p => Math.min(total - 1, p + 1))}
+                            disabled={page >= total - 1}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="m9 18 6-6-6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
-            <button
-                onClick={handleNext}
-                className="btn-none-styles"
-                disabled={currentIndex >= cars.length - 4}>
-                <img src={imageSrc} alt="Left" style={{ transform: rotation }}/>
 
-            </button>
-        </>
+            {cars.length === 0 ? (
+                <div className="carousel-empty">
+                    <span>🚗</span>
+                    <p>Поки що немає оголошень. Будьте першим!</p>
+                </div>
+            ) : (
+                <div className="carousel-grid">
+                    {visible.map(car => (
+                        <CarCard key={car.id} {...car} />
+                    ))}
+                </div>
+            )}
+        </section>
     );
-}
+};
 
 export default CarCarousel;

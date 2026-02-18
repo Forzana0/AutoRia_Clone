@@ -1,96 +1,116 @@
-.font-karla{
-    font-family: "Karla", sans-serif;
-    color: #FFFFFF;
+.pages-footer {
+    background: #111318;
+    color: #fff;
+    padding: 48px 0 24px;
 }
 
-.footer-container{
-    background-color: #8C9BA9;
-    border-radius: 11px 11px 0 0;
+.footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr 1.2fr;
+    gap: 40px;
+    margin-bottom: 40px;
 }
 
-.box-gray {
+@media (max-width: 900px) {
+    .footer-inner {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-inner {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Logo column */
+.footer-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
     display: flex;
     align-items: center;
-    justify-content: left;
-    width: 100%;
-    height: auto;
-    padding-bottom: 5vw;
-    height: 510px;
-    padding-left: 10%;
+    justify-content: center;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
 }
 
-.footer-sections {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1.2fr;
-    gap: 80px;
+.social-icon:hover {
+    background: #2563eb;
+    color: #fff;
 }
 
-.footer-section {
+/* Footer columns */
+.footer-col h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+.footer-col ul {
+    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
 }
 
-.main-menu,
-.footer-button{
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 22px;
-    text-transform: uppercase;
-    margin: 0;
+.footer-col ul li a {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
-.footer-button
-{
-    font-family: 'Montserrat', sans-serif;
-     color: #FFFFFF;
-    padding: 13px 28px;
-    border: 2px solid #FFFFFF;
-    background-color: transparent;
-    border-radius: 0;
+.footer-col ul li a:hover {
+    color: #fff;
 }
 
-.footer-sections ul {
+/* Support column */
+.footer-phone {
     font-size: 16px;
-    font-weight: 400;
-    font-style: normal;
-    list-style-type: none;
-    line-height: 19px;
-    padding: 0;
-    margin: 0 ;
-}
-
-.phone{
-    font-size: 28px;
     font-weight: 700;
-    color: #FFFFFF;
-    line-height: 33px;
-    margin: 0;
+    color: #fff;
+    margin-bottom: 6px;
 }
 
-.social-media-container{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-}
-
-.contacts-container{
+/* Bottom bar */
+.footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    margin-top: 346px;
-    position: absolute;
-    gap:60px;
 }
 
-.indent {
-  text-indent: 20px; 
-}
-
-.paper-icon{
-    width: 20px;
-}
-
-.contact-section{
-    display: flex;
-    flex-direction: row;
+.footer-bottom span {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
 }

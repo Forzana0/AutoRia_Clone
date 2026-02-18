@@ -1,78 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-.nav-section{
-    display:flex;
+* {
+    font-family: 'Manrope', sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.menu-container {
-    display: flex;
-    justify-content: space-between;
-    width: 80%;
-    margin: 0 auto;
-    height: 120px;
+.navbar {
+    width: 100%;
+    position: sticky;
+    top: 0;
     z-index: 1000;
-    background-color: transparent; 
+    background: #1a1d23;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 
-.menu-container a {
-  display: flex;
-  align-items: center;
-  margin-right: 36px;
-  color: #ffffff;
-  text-decoration: none;
+.navbar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.menu,
-.user-actions {
-  display: flex;
-  align-items: center;
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    cursor: pointer;
 }
 
-.sell-car-btn {
-   border-radius: 5px;
-   background-color: #FFFFFF;
-   font-size: 18px;
-   font-weight: 600;
-   color: #2E4F76 !important;
-   padding: 12px 24px;
-   text-align: center;
-   text-transform: uppercase;
-   height: 46px;
+.navbar-left span {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
 }
 
-.profile-button {
-   background-color: transparent;
-   display: flex;
-   align-items: center;
-   color: #ffffff;
+.burger-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
 }
 
-.user-actions img {
-   margin-right: 16px;
+.burger-icon span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
 }
 
-.menu-container.darkly a {
-    color:#3B454E;
-    text-shadow: 
-        0 0 10px rgba(255, 255, 255, 1), 
-        0 0 10px rgba(255, 255, 255, 1); 
-}
-.menu-container.dark a,
-.menu-container.dark button{
-    color:#3B454E;
-}
-.menu-container.dark .sell-car-btn {
-    color: #ffffff !important;
-    background-color: #2E4F76;
+.navbar-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-@media (max-width: 1300px) {
-    .menu-container {
-        width: 90%; 
-    }
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-@media (max-width: 1150px) {
-    .menu-container {
-        width: 100%; 
-    }
+.btn-add-ad {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-add-ad:hover {
+    background: #1d4ed8;
+}
+
+/* Profile icon */
+.profile-dropdown-wrap {
+    position: relative;
+}
+
+.profile-icon {
+    width: 36px;
+    height: 36px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.2s;
+    user-select: none;
+}
+
+.profile-icon:hover,
+.profile-icon.active {
+    background: #1d4ed8;
+}
+
+/* Dropdown */
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    min-width: 200px;
+    padding: 6px;
+    animation: dropdownFade 0.15s ease;
+    z-index: 999;
+}
+
+@keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a2e;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+    font-family: 'Manrope', sans-serif;
+}
+
+.dropdown-item:hover {
+    background: #f0f4ff;
+    color: #2563eb;
+}
+
+.dropdown-item svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.dropdown-item:hover svg {
+    opacity: 1;
+}
+
+.dropdown-item.danger {
+    color: #dc2626;
+}
+
+.dropdown-item.danger:hover {
+    background: #fff5f5;
+    color: #dc2626;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 4px 0;
+}
+
+/* Bottom nav */
+.navbar-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 42px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+}
+
+.nav-links li a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.nav-links li a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+}
+
+.nav-links li span {
+    color: rgba(255,255,255,0.2);
+    font-size: 12px;
+}
+
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.lang-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color 0.2s;
+    font-family: 'Manrope', sans-serif;
+}
+
+.lang-btn.active {
+    color: #fff;
+}
+
+.lang-btn:hover {
+    color: #fff;
+}
+
+.lang-divider {
+    color: rgba(255,255,255,0.2);
+    font-size: 12px;
 }

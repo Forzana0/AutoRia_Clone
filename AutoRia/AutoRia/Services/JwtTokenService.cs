@@ -53,7 +53,7 @@ public class JwtTokenService(
             new ("email", userEmail),
             new ("firstName", user.FirstName),
             new ("lastName", user.LastName),
-            new ("photo", user.Photo)
+            new ("photo", user.Photo ?? "")
         };
         claims.AddRange(roleClaims);
 

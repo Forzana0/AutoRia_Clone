@@ -1,14 +1,11 @@
-// React library
-import React, {useEffect, useState} from 'react';
-
-// Styles
+import React, { useEffect, useState } from 'react';
 import './ProfileCard.css';
-import axios from "axios";
-
+import axios from 'axios';
 
 type ProfileCardProps = {
     name: string;
     id: string;
+    collapsed?: boolean;
 };
 
 type Profile = {
@@ -21,35 +18,58 @@ type Profile = {
     photo: string;
 };
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ name, id }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }) => {
+    const [userData, setUserData] = useState<Profile | null>(null);
 
-    const [userData, setUserData] = useState<Profile>();
-    let currentPhoto = userData?.photo;
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const response = await axios.get(`http://localhost:5174/api/Accounts/GetUserById/${id}`);
                 setUserData(response.data);
-                currentPhoto = response.data.photo;
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error('Error fetching user data:', error);
             }
         };
+        if (id && id !== '0') fetchUserData();
+    }, [id]);
 
-        fetchUserData();
-    }, []);
+    const photoUrl = userData?.photo
+        ? `http://localhost:5174/images/1200_${userData.photo}`
+        : null;
+
+    const initials = name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
 
     return (
-        <div className="profile-card">
-            <img src={`http://localhost:5174/images/1200_${currentPhoto}`} alt={name} className="profile-image"/>
-            <div className="profile-details">
-                <h2>{userData?.firstName + " " + userData?.lastName}</h2>
-                <p>{`${userData ? userData.city : ""}, ${userData ? userData.region : ""}`}</p> {/* Display city and region */}
-
-                {/*<p>Рейтинг: {userData ? userData.rating : 0}</p> /!* Display rating *!/*/}
-
-                <p>Телефон: {userData ? userData.phoneNumber : "None"}</p> {/* Display phone number */}
+        <div className={`profile-card ${collapsed ? 'collapsed' : ''}`}>
+            {/* Avatar */}
+            <div className="profile-avatar">
+                {photoUrl ? (
+                    <img src={photoUrl} alt={name} />
+                ) : (
+                    <span className="profile-initials">{initials}</span>
+                )}
             </div>
+
+            {/* Info — hidden when collapsed */}
+            {!collapsed && (
+                <div className="profile-details">
+                    <div className="profile-header-row">
+                        <h2 className="profile-name">
+                            {userData
+                                ? `${userData.firstName} ${userData.lastName}`
+                                : name}
+                        </h2>
+                        <span className="profile-rating">10/10 ★</span>
+                    </div>
+                    <p className="profile-meta">Досвід: 4 роки</p>
+                    <p className="profile-meta">Замовлень виконано: 17</p>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,82 +1,166 @@
-.main-comp {
-    position: relative;
-    width: 100%;
-    top: -40px;
+.home-content {
+    background: #f8f9fb;
+    padding-bottom: 60px;
 }
 
-.bg-img {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 56%;
-    height: 50%;
-    object-fit: cover;
+/* Latest ads section */
+.latest-ads-section {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 0 16px;
 }
 
-.bg-img img {
-    width: 100%;
-    height: 100%;
-
+.ads-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
-.content-title, .carousel-container, .logo-container, .digest-container, .solid-container {
-    position: relative;
-    z-index: 1;
+@media (max-width: 900px) {
+    .ads-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .ads-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-
-.content-title {
-    text-align: left;
-    text-wrap: nowrap;
-    position: relative;
-    margin: 40px auto;
-    max-width: 1225px;
-}
-
-.center-width {
-    margin: 0 auto;
-
-}
-
-.title-1 {
-    padding-top: 60px;
-}
-
-.titles {
-    font-family: "Montserrat", sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: #3B454E;
-    text-transform: uppercase;
-}
-
-.carousel-container
-{
+.btn-view-all-wrap {
     display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.btn-view-all {
+    background: transparent;
+    border: 1.5px solid #2563eb;
+    color: #2563eb;
+    border-radius: 10px;
+    padding: 12px 36px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Manrope', sans-serif;
+}
+
+.btn-view-all:hover {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* Info text section */
+.info-text-section {
+    background: #fff;
+    padding: 48px 0;
+    margin-bottom: 0;
+}
+
+.info-text-inner {
+    max-width: 1100px;
     margin: 0 auto;
-    max-width: 1400px;
+    padding: 0 24px;
 }
 
-.logo-container {
+.info-text-inner h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #2563eb;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.info-text-inner p {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.75;
+    margin-bottom: 14px;
+}
+
+/* Services section */
+.services-section {
+    background: #f8f9fb;
+    padding: 48px 0;
+}
+
+.services-inner {
+    max-width: 1100px;
     margin: 0 auto;
-    max-width: 1225px;
-    padding-top: 50px;
+    padding: 0 24px;
 }
 
-.digest-container {
-
-    max-width: 1310px;
-    margin-top: 80px;
-    margin-bottom: 80px;
+.services-inner > h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1d23;
+    margin-bottom: 8px;
 }
 
-.solid-container {
-    padding: 40px 20px;
-    background-color: #3B454E;
-    color: #ffffff;
-    text-align: center;
+.services-inner > p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 28px;
 }
 
-.solid-container h3 {
-    color: #ffffff;
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 800px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.service-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    border: 1.5px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: box-shadow 0.2s;
+}
+
+.service-card:hover {
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.service-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1d23;
+}
+
+.service-card p {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.65;
+    flex: 1;
+}
+
+.service-card .btn-service {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Manrope', sans-serif;
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+.service-card .btn-service:hover {
+    background: #1d4ed8;
 }
