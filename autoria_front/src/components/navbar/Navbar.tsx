@@ -34,7 +34,6 @@ const Navbar: React.FC = () => {
 
     return (
         <nav className="navbar">
-            {/* Top row */}
             <div className="navbar-top">
                 <div className="navbar-left">
                     <div className="burger-icon">
@@ -83,23 +82,14 @@ const Navbar: React.FC = () => {
                                         </button>
                                     </>
                                 ) : (
-                                    <>
-                                        <button className="dropdown-item" onClick={() => { navigate('/auth'); setDropdownOpen(false); }}>
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                                                <polyline points="10 17 15 12 10 7" />
-                                                <line x1="15" y1="12" x2="3" y2="12" />
-                                            </svg>
-                                            Увійти
-                                        </button>
-                                        <button className="dropdown-item" onClick={() => { navigate('/auth'); setDropdownOpen(false); }}>
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                <circle cx="12" cy="7" r="4" />
-                                            </svg>
-                                            Зареєструватись
-                                        </button>
-                                    </>
+                                    <button className="dropdown-item" onClick={() => { navigate('/auth'); setDropdownOpen(false); }}>
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                                            <polyline points="10 17 15 12 10 7" />
+                                            <line x1="15" y1="12" x2="3" y2="12" />
+                                        </svg>
+                                        Увійти
+                                    </button>
                                 )}
                             </div>
                         )}
@@ -107,7 +97,6 @@ const Navbar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Bottom row */}
             <div className="navbar-bottom">
                 <ul className="nav-links">
                     <li><a href="#">Нові авто</a></li>

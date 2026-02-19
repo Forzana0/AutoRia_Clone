@@ -13,7 +13,7 @@ type Profile = {
     lastName: string;
     region: string;
     city: string;
-    rating: number;
+    rating: string | number | null;
     phoneNumber: string;
     photo: string;
 };
@@ -39,10 +39,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }
 
     const initials = name
         .split(' ')
+        .filter(Boolean)
         .map(n => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2);
+
+    const rating = userData?.rating ?? 0;
 
     return (
         <div className={`profile-card ${collapsed ? 'collapsed' : ''}`}>
@@ -64,10 +67,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }
                                 ? `${userData.firstName} ${userData.lastName}`
                                 : name}
                         </h2>
-                        <span className="profile-rating">10/10 ★</span>
+                        <span className="profile-rating">{rating}/10 ★</span>
                     </div>
-                    <p className="profile-meta">Досвід: 4 роки</p>
-                    <p className="profile-meta">Замовлень виконано: 17</p>
                 </div>
             )}
         </div>
