@@ -1,10 +1,11 @@
 import './AccountHeader.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ProfileCard from "./HeaderComponents/ProfileCard";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../redux/store';
 import { logout } from '../../../../redux/authSlice';
+import axios from 'axios';
 
 interface DecodedToken {
     firstName?: string;
@@ -21,22 +22,16 @@ const decodeToken = (token: string): DecodedToken | null => {
     }
 };
 
-const NAV_ITEMS = [
-    { key: 'ads',           label: 'Список оголошень',  count: 1,    path: '/account/ads' },
-    { key: 'personal',      label: 'Особистий рахунок', count: null, path: '/account/personal' },
-    { key: 'messages',      label: 'Повідомлення',      count: 13,   path: '/account/messages' },
-    { key: 'favorites',     label: 'Улюблене',          count: 3,    path: '/account/favorites' },
-    { key: 'notifications', label: 'Сповіщення',        count: 0,    path: '/account/notifications' },
-];
-
 const AccountHeader: React.FC = () => {
     const tokenFromRedux = useSelector((state: RootState) => state.auth.token);
     const token = tokenFromRedux || localStorage.getItem('token');
-    console.log('token decoded:', decodeToken(token));
     const dispatch = useDispatch();
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    // Динамічні лічильники
+    const [adsCount, setAdsCount] = useState<number>(0);
 
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
@@ -49,6 +44,28 @@ const AccountHeader: React.FC = () => {
         }
     }
 
+    // Завантаження кількості оголошень
+    useEffect(() => {
+        const fetchAdsCount = async () => {
+            if (!profileData.id || profileData.id === '0') return;
+            try {
+                const response = await axios.get(`http://localhost:5174/api/Car/user/${profileData.id}`);
+                setAdsCount(response.data?.length ?? 0);
+            } catch {
+                setAdsCount(0);
+            }
+        };
+        fetchAdsCount();
+    }, [profileData.id]);
+
+    const NAV_ITEMS = [
+        { key: 'ads',           label: 'Список оголошень',  count: adsCount, path: '/account/ads' },
+        { key: 'personal',      label: 'Особистий рахунок', count: null,     path: '/account/personal' },
+        { key: 'messages',      label: 'Повідомлення',      count: 0,        path: '/account/messages' },
+        { key: 'favorites',     label: 'Улюблене',          count: 0,        path: '/account/favorites' },
+        { key: 'notifications', label: 'Сповіщення',        count: 0,        path: '/account/notifications' },
+    ];
+
     const isActive = (path: string) => location.pathname === path;
 
     const handleLogout = () => {
@@ -56,8 +73,6 @@ const AccountHeader: React.FC = () => {
         localStorage.removeItem('token');
         navigate('/auth');
     };
-
-
 
     return (
         <aside className={`account-sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -83,13 +98,13 @@ const AccountHeader: React.FC = () => {
                 </div>
             </div>
 
-            {/* Balance */}
+            {/* Balance — статично 0 грн поки немає API */}
             <div className="sidebar-card balance-section">
                 <div className="balance-icon">💰</div>
                 {!collapsed && (
                     <>
                         <div className="balance-info">
-                            <span className="balance-amount">3423 грн</span>
+                            <span className="balance-amount">0 грн</span>
                             <span className="balance-label">Баланс на сайті</span>
                         </div>
                         <button className="sidebar-action-btn">Поповнити</button>
@@ -104,9 +119,14 @@ const AccountHeader: React.FC = () => {
                     <>
                         <div className="balance-info">
                             <span className="balance-amount">Оголошення</span>
-                            <span className="balance-label">Кількість: 1</span>
+                            <span className="balance-label">Кількість: {adsCount}</span>
                         </div>
-                        <button className="sidebar-action-btn">Додати</button>
+                        <button
+                            className="sidebar-action-btn"
+                            onClick={() => navigate('/post-ad')}
+                        >
+                            Додати
+                        </button>
                     </>
                 )}
             </div>

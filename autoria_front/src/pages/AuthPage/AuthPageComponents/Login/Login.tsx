@@ -35,16 +35,19 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
         try {
             const response = await api.post('/api/Accounts/SignIn', { email, password });
 
-            const token: string = response.data.Token;
+            // ASP.NET Core повертає camelCase: token, firstName, lastName
+            const token: string = response.data.token;
             localStorage.setItem('token', token);
             dispatch(login({
                 user: {
-                    name: `${response.data.FirstName} ${response.data.LastName}`,
+                    name: `${response.data.firstName} ${response.data.lastName}`,
                     id: 0,
                     location: '',
                     rating: 0,
                     imageUrl: [],
-                }, token: response.data.Token, }));
+                },
+                token,
+            }));
             navigate('/');
         } catch (err: any) {
             const msg = err?.response?.data || 'E-mail або пароль введені не правильно';

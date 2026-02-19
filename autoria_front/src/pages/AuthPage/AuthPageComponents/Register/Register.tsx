@@ -92,7 +92,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
 
             const response = await api.post('/api/Accounts/Registration', formData);
 
-            const token: string = response.data.Token;
+            // ASP.NET Core повертає camelCase: token, firstName, lastName
+            const token: string = response.data.token;
             localStorage.setItem('token', token);
             dispatch(login({
                 user: {
@@ -136,7 +137,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                 <div className="auth-field">
                     <label>Фото профілю</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        {/* Превью */}
                         <div style={{
                             width: 56, height: 56, borderRadius: '50%',
                             background: '#f0f0f0',
@@ -152,7 +152,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                                 </svg>
                             }
                         </div>
-                        {/* Кнопка вибору */}
                         <label style={{
                             padding: '8px 16px', borderRadius: 8,
                             border: `1.5px solid ${errors.photo ? '#ef4444' : '#e0e0e0'}`,
