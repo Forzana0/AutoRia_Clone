@@ -12,7 +12,6 @@
     width: 76px;
 }
 
-/* Card base */
 .sidebar-card {
     background: #fff;
     border-radius: 16px;
@@ -20,12 +19,10 @@
     overflow: hidden;
 }
 
-/* Profile section */
 .profile-section {
     padding: 20px 16px;
 }
 
-/* Tab buttons */
 .sidebar-tab-buttons {
     display: flex;
     gap: 8px;
@@ -52,7 +49,6 @@
     border-color: #1a1a2e;
 }
 
-/* Balance / Listings */
 .balance-section,
 .listings-section {
     display: flex;
@@ -84,24 +80,25 @@
     margin-top: 2px;
 }
 
+/* Чорні кнопки "Додати" і "Поповнити" */
 .sidebar-action-btn {
     padding: 6px 14px;
     border-radius: 8px;
-    border: 1.5px solid #1a1a2e;
-    background: #fff;
+    border: none;
+    background: #1a1a2e;
+    color: #fff;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     font-family: inherit;
-    transition: background 0.15s;
+    transition: opacity 0.15s;
 }
 
 .sidebar-action-btn:hover {
-    background: #f0f0f0;
+    opacity: 0.82;
 }
 
-/* Collapse button */
 .collapse-btn {
     align-self: flex-end;
     width: 28px;
@@ -124,7 +121,6 @@
     opacity: 0.85;
 }
 
-/* Nav */
 .nav-section {
     display: flex;
     flex-direction: column;
@@ -164,7 +160,6 @@
     color: #aaa;
 }
 
-/* Logout */
 .logout-btn {
     background: none;
     border: none;

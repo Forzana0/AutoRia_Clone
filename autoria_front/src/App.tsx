@@ -7,19 +7,21 @@ import MainSearchPage from './pages/MainSearchPage/MainSearchPage';
 import AuthPage from './pages/AuthPage/AuthPage';
 import AccountPage from './pages/AccountPage/AccountPage';
 import EditAccountPage from './pages/EditAccountPage/EditAccountPage';
+import PostAdPage from './pages/PostAdPage/PostAdPage';
 
 const App: React.FC = () => {
     return (
         <BrowserRouter>
             <Navbar />
             <Routes>
-                <Route path="/"     element={<MainSearchPage />} />
-                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/"        element={<MainSearchPage />} />
+                <Route path="/auth"    element={<AuthPage />} />
+                <Route path="/post-ad" element={<PostAdPage />} />
 
                 <Route path="/account" element={<AccountPage />}>
-                    <Route index          element={<div>Статистика (coming soon)</div>} />
-                    <Route path="edit"    element={<EditAccountPage />} />
-                    <Route path="ads"     element={<div>Мої оголошення</div>} />
+                    <Route index                element={<div>Статистика (coming soon)</div>} />
+                    <Route path="edit"          element={<EditAccountPage />} />
+                    <Route path="ads"           element={<div>Мої оголошення</div>} />
                     <Route path="messages"      element={<div>Повідомлення</div>} />
                     <Route path="favorites"     element={<div>Улюблене</div>} />
                     <Route path="notifications" element={<div>Сповіщення</div>} />
