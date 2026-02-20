@@ -41,6 +41,7 @@ const ProfileEditing: React.FC = () => {
         email: '',
         phoneNumber: '',
         city: '',
+        description: '',
     });
 
     const [passwords, setPasswords] = useState({
@@ -67,6 +68,7 @@ const ProfileEditing: React.FC = () => {
                     email:       d.email       || '',
                     phoneNumber: d.phoneNumber || '',
                     city:        d.city        || '',
+                    description: d.description || '',
                 });
                 if (d.photo) {
                     setPhotoPreview(`http://localhost:5174/images/1200_${d.photo}`);
@@ -78,7 +80,7 @@ const ProfileEditing: React.FC = () => {
         fetchUser();
     }, [token]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm(f => ({ ...f, [e.target.name]: e.target.value }));
     };
 
@@ -101,7 +103,6 @@ const ProfileEditing: React.FC = () => {
         e.preventDefault();
         if (!token || !userId) return;
 
-        // Валідація пароля
         if (passwords.newPassword || passwords.confirmPassword) {
             if (passwords.newPassword !== passwords.confirmPassword) {
                 setError('Нові паролі не співпадають');
@@ -115,9 +116,7 @@ const ProfileEditing: React.FC = () => {
 
         setLoading(true);
         setError(null);
-
         try {
-            // 1. Оновлення профілю + фото
             const formData = new FormData();
             formData.append('FirstName',   form.firstName);
             formData.append('LastName',    form.lastName);
@@ -126,7 +125,7 @@ const ProfileEditing: React.FC = () => {
             formData.append('Email',       form.email);
             formData.append('PhoneNumber', form.phoneNumber);
             formData.append('City',        form.city);
-            // ВАЖЛИВО: бек чекає 'Photo', не 'Image'
+            formData.append('Description', form.description);
             if (newPhoto) formData.append('Photo', newPhoto);
 
             await axios.post(
@@ -135,7 +134,6 @@ const ProfileEditing: React.FC = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            // 2. Зміна пароля — окремий PUT запит з JSON
             if (passwords.newPassword) {
                 await axios.put(
                     `${API_URL}/UpdatePassword/update-password/${userId}`,
@@ -219,6 +217,18 @@ const ProfileEditing: React.FC = () => {
                             <label>Місто</label>
                             <input type="text" name="city" value={form.city} onChange={handleChange} />
                         </div>
+                    </div>
+
+                    {/* Опис — на всю ширину */}
+                    <div className="settings-field settings-field-full" style={{ marginTop: 14 }}>
+                        <label>Опис профілю</label>
+                        <textarea
+                            name="description"
+                            value={form.description}
+                            onChange={handleChange}
+                            rows={4}
+                            placeholder="Розкажіть про себе..."
+                        />
                     </div>
                 </section>
 

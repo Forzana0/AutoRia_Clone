@@ -1,183 +1,236 @@
-// Libraries
-import React, {useEffect, useState} from "react";
-import { Layout } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './ProductPage.css';
-import {Car, UserCar} from '../../interfaces/Car';
+import { UserCar } from '../../interfaces/Car';
+import Navbar from '../../components/navbar/Navbar';
+import PagesFooter from '../../components/footer/PagesFooter';
+import CarCard from '../../components/carCard/CarCard';
 
-// Components
-import PagesFooter from "../../components/footer/PagesFooter";
-import ProductInfo from "./ProductPageComponents/DescriptionInfo/ProductInfo.tsx";
-import ImageGallery from "./ProductPageComponents/ImageGallery/ImageGallery.tsx";
-import CompanyInfo from "./ProductPageComponents/CompanyInfo/CompanyInfo.tsx";
-import CreditVinSection from "./ProductPageComponents/CreditVinSection/CreditVinSection.tsx";
-import CarSalonDescription from "./ProductPageComponents/DescriptionInfo/CarSalonDescription.tsx";
-//import CarList from "./ProductPageComponents/CarList/CarList.tsx";
-import BankFinancing from "./ProductPageComponents/BankFinancing/BankFinancing.tsx";
-import {useNavigate, useParams} from "react-router-dom";
-import axios from "axios";
-import Navbar from "../../components/navbar/Navbar.tsx";
-
-const {Content, Footer } = Layout;
-
+const API = 'http://localhost:5174';
 
 const ProductPage: React.FC = () => {
-    const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
-    const [car, setCar] = useState<UserCar>();
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isTechDetailsVisible, setIsTechDetailsVisible] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const [car, setCar] = useState<UserCar | null>(null);
+    const [latestCars, setLatestCars] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [activePhoto, setActivePhoto] = useState(0);
 
     useEffect(() => {
-        const fetchCar = async () => {
+        const fetchData = async () => {
             try {
-
-                setLoading(true);
-                const response = await axios.get(`http://localhost:5174/api/Car/${id}`); // Replace with your actual API URL
-                setCar(response.data);
-                setLoading(false);
-
-            } catch (err) {
-                console.error('Failed to fetch car data', err);
-                setError('Failed to load car data.');
+                const [carRes, allCarsRes] = await Promise.all([
+                    axios.get(`${API}/api/Car/${id}`),
+                    axios.get(`${API}/api/Car`),
+                ]);
+                setCar(carRes.data);
+                const others = (allCarsRes.data as any[]).filter(c => c.id !== Number(id)).slice(0, 6);
+                setLatestCars(others);
+            } catch (e) {
+                console.error(e);
+            } finally {
                 setLoading(false);
             }
         };
-
-
-        if(id){
-            fetchCar();
-        }
+        if (id) fetchData();
     }, [id]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    if (loading) return <div className="pp-loading">Завантаження...</div>;
+    if (!car) return <div className="pp-loading">Оголошення не знайдено</div>;
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+    const photos = car.photos || [];
+    const mainPhoto = photos[activePhoto]?.name
+        ? `${API}/images/1200_${photos[activePhoto].name}`
+        : null;
 
-    if (!car) {
-    }
+    const sellerPhoto = car.user?.photo
+        ? `${API}/images/200_${car.user.photo}`
+        : null;
 
-    const carDetails = [
-        { label: "Рік", value: car?.year },
-        { label: "Модель", value: car?.carModel.name },
-        { label: "Бренд", value: car?.carBrand.name },
-        { label: "Тип кузова", value: car?.bodyType.name },
-        { label: "Стадія", value: car?.stage },
-        { label: "Пробіг", value: `${car?.mileage} km` },
-        { label: "VIN", value: car?.vin },
-        { label: "Трансмісія", value: car?.transmissionType.name },
-        { label: "Кількість сидінь", value: `${car?.numberOfSeats.number} (${car?.numberOfSeats.seatType})` },
-        { label: "Тип палива", value: car?.fuelTypes.name },
-        { label: "Об'єм двигуна", value: `${car?.engineVolume.volume}L` },
-        { label: "Тип транспорту", value: car?.transportType.name },
-        { label: "Місто", value: car?.city ? car?.city.name : "Невідоме місто" },
-        { label: "Колір", value: `${car?.color.color} ${car?.metallic ? "(Металік)" : ""}` },
-        { label: "Ціна", value: car?.price || "Не вказано" },
-        { label: "Участь в ДТП", value: car?.accidentParticipation ? "Так" : "Ні" },
-        { label: "Електропакет", value: car?.hasPowerWindows ? "Так" : "Ні" },
-        { label: "Кондиціонер", value: car?.hasAirConditioning ? "Так" : "Ні" },
-        { label: "Шкіряний салон", value: car?.hasLeatherInterior ? "Так" : "Ні" },
-        { label: "Колір преміум-салону", value: car?.hasPremiumInteriorColor ? "Так" : "Ні" },
-        { label: "Підсилювач керма", value: car?.hasPowerSteering ? "Так" : "Ні" },
-        { label: "Регульовані сидіння", value: car?.hasHeightAdjustableSeats ? "Так" : "Ні" },
-        { label: "Фари", value: car?.hasHeadlights ? "Так" : "Ні" },
-        { label: "Запасне колесо", value: car?.hasSpareWheel ? "Так" : "Ні" },
-        { label: "Пам'ять сидінь", value: car?.hasSeatMemory ? "Так" : "Ні" },
-        { label: "Підігрів сидінь", value: car?.hasHeatedSeats ? "Так" : "Ні" },
-        { label: "Вентиляція сидінь", value: car?.hasSeatVentilation ? "Так" : "Ні" },
-        { label: "Розмитнений", value: car?.isNotCustomsCleared ? "Ні" : "Так" },
-        { label: "Можливість торгу", value: car?.isBargainAvailable ? "Так" : "Ні" },
-        { label: "Можливість обміну", value: car?.isExchangeAvailable ? "Так" : "Ні" },
-        { label: "Можливість розстрочки", value: car?.isInstallmentAvailable ? "Так" : "Ні" }
-    ];
+    const sellerName = car.user
+        ? `${car.user.firstName || ''} ${car.user.lastName || ''}`.trim() || car.user.userName
+        : 'Продавець';
 
-    const toggleTechDetails = () => {
-        setIsTechDetailsVisible(!isTechDetailsVisible);
-    };
+    const details = [
+        { icon: '📅', label: `${car.year} рік` },
+        { icon: '📍', label: car.city?.name || '—' },
+        { icon: '🛣️', label: `${car.mileage?.toLocaleString()} км` },
+        { icon: '⚡', label: car.engineVolume ? `${car.engineVolume.volume} — об'єм двигуна` : '—' },
+        { icon: '⛽', label: car.fuelTypes?.name || '—' },
+        { icon: '🚗', label: car.bodyType?.name || car.transmissionType?.name || '—' },
+    ].filter(d => d.label !== '—');
 
-    const searchType = 'Будь-який';
-    const carType = 'Будь-який';
-    const selectedBrand: string | undefined = car?.carBrand.name;
-    const region = 'Будь-який';
-    const year = 'Будь-який';
-    const price = 'Будь-який';
-    const vinChecked = false;
-    const selectedModel = 'Будь-який';
-
-    const searchRequest = {
-        searchType,
-        carType,
-        selectedBrand ,  // Use the clicked logo's brand
-        selectedModel,
-        region,
-        year,
-        price,
-        vinChecked,
-    };
-
-    async function handleClick() {
-        const response = await axios.post<Car[]>('http://localhost:5174/api/Car/search', searchRequest);
-        //console.log(response.data); // Обробка отриманих даних
-        navigate("/search", {state: {cars: response.data, text: searchRequest}});
-    }
+    const allDetails = [
+        { label: 'Рік випуску', value: car.year },
+        { label: 'Марка', value: car.carBrand?.name },
+        { label: 'Модель', value: car.carModel?.name },
+        { label: 'Тип кузова', value: car.bodyType?.name },
+        { label: 'Стан', value: car.stage },
+        { label: 'Пробіг', value: `${car.mileage?.toLocaleString()} км` },
+        { label: 'VIN', value: car.vin },
+        { label: 'Коробка передач', value: car.transmissionType?.name },
+        { label: 'К-сть місць', value: car.numberOfSeats ? `${car.numberOfSeats.number} (${car.numberOfSeats.seatType})` : null },
+        { label: 'Тип палива', value: car.fuelTypes?.name },
+        { label: "Об'єм двигуна", value: car.engineVolume ? `${car.engineVolume.volume} л` : null },
+        { label: 'Тип транспорту', value: car.transportType?.name },
+        { label: 'Місто', value: car.city?.name },
+        { label: 'Колір', value: car.color ? `${car.color.color}${car.metallic ? ' (Металік)' : ''}` : null },
+        { label: 'Участь в ДТП', value: car.accidentParticipation ? 'Так' : 'Ні' },
+        { label: 'Кондиціонер', value: car.hasAirConditioning ? 'Так' : null },
+        { label: 'Підігрів сидінь', value: car.hasHeatedSeats ? 'Так' : null },
+        { label: 'Шкіряний салон', value: car.hasLeatherInterior ? 'Так' : null },
+        { label: 'Електросклопідйомники', value: car.hasPowerWindows ? 'Так' : null },
+        { label: 'Гідропідсилювач', value: car.hasPowerSteering ? 'Так' : null },
+        { label: 'Торг', value: car.isBargainAvailable ? 'Так' : null },
+        { label: 'Обмін', value: car.isExchangeAvailable ? 'Так' : null },
+        { label: 'Розстрочка', value: car.isInstallmentAvailable ? 'Так' : null },
+        { label: 'Розмитнений', value: car.isNotCustomsCleared ? 'Ні' : 'Так' },
+    ].filter(d => d.value != null && d.value !== '');
 
     return (
-        <Layout className="base-layout">
-            <Navbar additionalClass="dark"/>
-            <Content className="base-content product-container">
-                <p className="path">Головна/<span>каталог</span></p>
-                <div className="up-btn-container">
-                    <button onClick={handleClick}><img src="/images/search-2.png" alt="Search"/>Всі пропозиції {car?.carBrand.name}</button>
-                </div>
-                <div className="info-container">
-                    <ProductInfo car={car}/>
-                    <ImageGallery car={car} />
-                    <CompanyInfo car={car}/>
-                    <CreditVinSection  car={car}/>
-                </div>
-                <div className="info-container">
+        <div className="pp-wrapper">
+            <Navbar />
 
-                    <div className="details-btn-container">
-                        <button className="details-btn" onClick={toggleTechDetails}>Всі характеристики<img src="/images/down.png" alt="down" className={isTechDetailsVisible ? 'rotated1' : 'rotated2'} /></button>
-                        {isTechDetailsVisible && (
-                            <div className="prod-details">
-                                <p>{car?.description}</p>
-                                <ul>
-                                    {carDetails.map((detail, index) => (
-                                        <li key={index}>
-                                            {detail.label}: <span>{detail.value}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                        {!isTechDetailsVisible && (
-                            <BankFinancing />
-                        )}
+            {/* Hero section */}
+            <div className="pp-hero">
+                {/* Gallery */}
+                <div className="pp-gallery">
+                    <div className="pp-main-photo">
+                        {mainPhoto
+                            ? <img src={mainPhoto} alt="car" />
+                            : <div className="pp-no-photo">Фото відсутнє</div>
+                        }
                     </div>
-                    <div>
-                        <CarSalonDescription  car={car}/>
+                    {photos.length > 1 && (
+                        <div className="pp-thumbs">
+                            {photos.map((p, i) => (
+                                <div
+                                    key={i}
+                                    className={`pp-thumb ${i === activePhoto ? 'active' : ''}`}
+                                    onClick={() => setActivePhoto(i)}
+                                >
+                                    <img src={`${API}/images/200_${p.name}`} alt={`photo-${i}`} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                        <div className="desc-finansing">
+                {/* Seller card */}
+                <div className="pp-seller-card">
+                    <div className="pp-seller-rating">
+                        {car.user ? '5/5 ★' : ''}
+                    </div>
+                    <div className="pp-seller-top">
+                        <div className="pp-seller-avatar">
+                            {sellerPhoto
+                                ? <img src={sellerPhoto} alt={sellerName} />
+                                : <div className="pp-seller-initials">
+                                    {sellerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                </div>
+                            }
+                        </div>
+                        <h3 className="pp-seller-name">{sellerName}</h3>
+                    </div>
 
-                            {isTechDetailsVisible && (
-                                <BankFinancing />
-                            )}
+                    {car.user && (
+                        <ul className="pp-seller-meta">
+                            <li>• Телефон: {car.user.phoneNumber || '—'}</li>
+                        </ul>
+                    )}
+
+                    <div className="pp-seller-actions">
+                        <button className="pp-btn-contact" disabled>Зв'язатися</button>
+                        <button
+                            className="pp-btn-profile"
+                            onClick={() => car.user?.userId && navigate(`/account`)}
+                            disabled
+                        >
+                            Профіль
+                        </button>
+                    </div>
+
+                    <div className="pp-verified">
+                        ✓ Продавець перевірений банком
+                    </div>
+                </div>
+            </div>
+
+            {/* Main info */}
+            <div className="pp-content">
+                <div className="pp-info-left">
+                    {/* Title + price */}
+                    <div className="pp-title-block">
+                        <div className="pp-car-title">
+                            <span className="pp-brand">{car.carBrand?.name} / {car.carModel?.name}</span>
+                            {car.stage && <span className="pp-stage">• {car.stage}</span>}
+                        </div>
+                        <div className="pp-price-block">
+                            <span className="pp-price-usd">$ {car.price?.toLocaleString()}</span>
+                        </div>
+                        <div className="pp-date">
+                            📅 {new Date(car.dateCreated).toLocaleDateString('uk-UA')}
                         </div>
                     </div>
 
-
+                    {/* Quick details */}
+                    <div className="pp-quick-details">
+                        {details.map((d, i) => (
+                            <div key={i} className="pp-detail-item">
+                                <span className="pp-detail-icon">{d.icon}</span>
+                                <span>{d.label}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-                {/*<CarList/>*/}
-            </Content>
-            <Footer className="footer">
-                <PagesFooter/>
-            </Footer>
-        </Layout>
+
+                {/* Description */}
+                <div className="pp-description">
+                    <p>{car.description || 'Опис відсутній'}</p>
+                </div>
+            </div>
+
+            {/* All characteristics */}
+            <div className="pp-all-details">
+                <h3 className="pp-section-title">Всі характеристики</h3>
+                <div className="pp-details-grid">
+                    {allDetails.map((d, i) => (
+                        <div key={i} className="pp-detail-row">
+                            <span className="pp-detail-label">{d.label}</span>
+                            <span className="pp-detail-value">{d.value}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Latest ads */}
+            {latestCars.length > 0 && (
+                <div className="pp-latest">
+                    <h3 className="pp-section-title">Останні додані оголошення</h3>
+                    <div className="pp-latest-grid">
+                        {latestCars.map(c => (
+                            <CarCard
+                                key={c.id}
+                                id={c.id}
+                                title={`${c.carBrand?.name || ''} ${c.carModel?.name || ''} ${c.year || ''}`.trim()}
+                                location={c.city?.name}
+                                mileage={c.mileage ? `${Math.round(c.mileage / 1000)} тис. км` : undefined}
+                                transmission={c.transmissionType?.name}
+                                fuel={c.fuelTypes?.name}
+                                priceUsd={c.price || 0}
+                                image={c.photos?.[0]?.name ? `${API}/images/800_${c.photos[0].name}` : undefined}
+                            />
+                        ))}
+                    </div>
+                    <div className="pp-view-all">
+                        <button onClick={() => navigate('/search')}>Дивитись всі оголошення</button>
+                    </div>
+                </div>
+            )}
+
+            <PagesFooter />
+        </div>
     );
 };
 
