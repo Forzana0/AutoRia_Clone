@@ -1,62 +1,25 @@
-// src/pages/AccountPage/AccountPage.tsx
-import React, { useEffect } from "react";
-
-import { Layout } from 'antd';
-import { Outlet } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
 import './AccountPage.css';
-
-
-// Компоненти
-import AccountHeader from "./AccountPageComponents/Header/AccountHeader.tsx";
-import PagesFooter from "../../components/footer/PagesFooter";
-
-const { Header, Content, Footer } = Layout;
+import AccountHeader from './AccountPageComponents/Header/AccountHeader';
 
 const AccountPage: React.FC = () => {
-    //const [profile, setProfile] = useState(null);
-
     useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    const fetchProfile = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
             console.log('Користувач не авторизований');
-            return;
         }
-        try {
-            const response = await fetch('/api/profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                //const data = await response.json();
-                //setProfile(data);
-            } else {
-                console.log('Помилка доступу до профілю');
-            }
-        } catch (error) {
-            console.error('Помилка запиту:', error);
-        }
-    };
+    }, []);
 
     return (
-        <Layout className="account-layout">
-
-            <Header className="account-header">
+        <div className="account-page">
+            <div className="account-container">
                 <AccountHeader />
-            </Header>
-
-            <Content>
-
+                <main className="account-main">
                     <Outlet />
-
-            </Content>
-            <Footer className="footer">
-                <PagesFooter />
-            </Footer>
-        </Layout>
+                </main>
+            </div>
+        </div>
     );
 };
 

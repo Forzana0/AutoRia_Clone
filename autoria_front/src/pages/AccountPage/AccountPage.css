@@ -1,22 +1,23 @@
-.account-layout {
-    width: 100%;
+.account-page {
+    background: #f5f5f7;
+    min-height: calc(100vh - 100px); /* висота за мінусом navbar */
+    padding: 32px 0;
+}
 
-    height: auto;
+.account-container {
+    max-width: 1200px;
     margin: 0 auto;
-    position: relative;
-    background-color: #f1f2f6;
+    padding: 0 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
 }
 
-.footer{
-    width: 1919px;
-    height: 510px;
-    padding: 0;
-}
-
-.account-header{
-
-    height: 450px;
-    padding: 0;
-    display: contents;
-    background: linear-gradient(0deg, #F0F2F5 0%, #8C9BA9 100%);
+.account-main {
+    flex: 1;
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 36px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    min-height: 500px;
 }

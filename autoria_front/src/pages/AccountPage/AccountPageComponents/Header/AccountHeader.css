@@ -1,97 +1,177 @@
-
-.profile-overview-container{
-    height: 250px;
-    width: 100%;
-    padding: 0 200px;
+.account-sidebar {
+    width: 260px;
+    flex-shrink: 0;
     display: flex;
-    justify-content: space-between;
     flex-direction: column;
+    gap: 12px;
+    transition: width 0.25s ease;
+    font-family: 'Manrope', sans-serif;
 }
-.profile-overview-container hr{
-    background-color: #DDDDDD;
-    height: 2px;
-    border: none;
+
+.account-sidebar.collapsed {
+    width: 76px;
 }
-.account-menu {
-    margin: 10px 0;
+
+.sidebar-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.profile-section {
+    padding: 20px 16px;
+}
+
+.sidebar-tab-buttons {
     display: flex;
-    list-style: none;
-    gap: 60px;
-    font-family: 'Montserrat', sans-serif;
+    gap: 8px;
+    margin-top: 14px;
 }
 
-.menu-item {
-    color: #666666;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 20px;
-}
-
-.menu-item a {
-    text-decoration: none;
+.tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    background: #f5f5f5;
     color: #333;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
 }
 
-.menu-item a:hover ,.active{
-    color: #2E4F76;
-    text-decoration: underline;
+.tab-btn.active {
+    background: #1a1a2e;
+    color: #fff;
+    border-color: #1a1a2e;
 }
 
-.user-info-actions {
+.balance-section,
+.listings-section {
     display: flex;
-    justify-content: space-between;
-}
-.btn-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
+    gap: 12px;
+    padding: 14px 16px;
 }
 
+.balance-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
 
-.edit-profile-button,
-.chat-button {
-    height: 41px;
-    padding: 12px 24px 12px 24px;
-    border-radius: 5px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 20px;
+.balance-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.balance-amount {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a1a2e;
+}
+
+.balance-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* Чорні кнопки "Додати" і "Поповнити" */
+.sidebar-action-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: opacity 0.15s;
+}
+
+.sidebar-action-btn:hover {
+    opacity: 0.82;
+}
+
+.collapse-btn {
+    align-self: flex-end;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1a1a2e;
+    color: #fff;
     border: none;
     cursor: pointer;
-}
-.chat-button {
-    background-color: #2E4F76;
-    color: #ffffff;
-}
-.edit-profile-button {
-    color:#2E4F76;
+    font-size: 16px;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
     align-items: center;
-    gap: 10px;
-    border: 1px solid #2E4F76;
-    background-color: transparent;
+    justify-content: center;
+    margin-top: -4px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
 }
 
-.edit-profile-button:focus,
-.chat-button:focus {
-    outline: none;
+.collapse-btn:hover {
+    opacity: 0.85;
 }
 
-.accbaseheader
-{
+.nav-section {
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 0 185px;
+    flex-direction: column;
 }
-.nameheader
-{
 
-    background: linear-gradient(0deg, #F0F2F5 0%, #8C9BA9 100%);
+.nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: #f8f8f8;
+}
+
+.nav-item.active {
+    background: #f0f4ff;
+    color: #3b5bdb;
+    font-weight: 700;
+}
+
+.nav-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin: 0 auto;
+}
+
+.nav-arrow {
+    color: #aaa;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 0;
+    text-align: left;
+    font-family: inherit;
+}
+
+.account-sidebar.collapsed .logout-btn {
+    text-align: center;
 }

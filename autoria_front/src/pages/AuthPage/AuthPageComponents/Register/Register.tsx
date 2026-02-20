@@ -1,194 +1,316 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../AuthPageComponents.css';
 import { useDispatch } from 'react-redux';
-import { register } from "../../authSlice.ts";
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../../../../redux/authSlice';
+import api from '../../../../http';
 
+interface RegisterProps {
+    onSwitch: () => void;
+}
 
-const Register: React.FC = () => {
-    const [fullName, setFullName] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [phone, setPhone] = useState<string>('');
-    const [username, setUsername] = useState<string>('');
-    const [image, setImage] = useState<File | null>(null);
-    const [city, setCity] = useState<string>('');
-    const navigate = useNavigate();
+const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const validateForm = (): boolean => {
-        const newErrors: { [key: string]: string } = {};
+    const [form, setForm] = useState({
+        firstName: '',
+        lastName: '',
+        middleName: '',
+        userName: '',
+        email: '',
+        phoneNumber: '',
+        city: '',
+        password: '',
+        confirm: '',
+    });
+    const [photo, setPhoto] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [showPass, setShowPass] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [loading, setLoading] = useState(false);
 
-        // Full name validation
-        const nameParts = fullName.trim().split(' ');
-        if (nameParts.length < 2) {
-            newErrors.fullName = 'Будь ласка, введіть повне ім’я (ім’я та прізвище).';
-            setFullName('');
-        }
-
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            newErrors.email = 'Будь ласка, введіть дійсну електронну адресу.';
-            setEmail('');
-        }
-
-        // Username validation
-        if (!username.trim()) {
-            newErrors.username = 'Будь ласка, введіть ім’я користувача.';
-            setUsername('');
-        }
-
-        // Password validation
-        if (password.length < 6) {
-            newErrors.password = 'Пароль має містити принаймні 6 символів.';
-            setPassword('');
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+    const change = (field: string, val: string) => {
+        setForm(f => ({ ...f, [field]: val }));
+        setErrors(e => { const n = { ...e }; delete n[field]; return n; });
     };
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) {
-            return;
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+        setPhoto(file);
+        setErrors(er => { const n = { ...er }; delete n.photo; return n; });
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => setPhotoPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setPhotoPreview(null);
         }
+    };
 
-        const [lastName, firstName, middleName] = fullName.split(' ');
+    const getStrength = (p: string) => {
+        if (!p) return null;
+        if (p.length < 6) return 'weak';
+        if (p.length < 10 || !/[0-9]/.test(p)) return 'medium';
+        return 'strong';
+    };
 
-        const formData = new FormData();
-        formData.append("FirstName", firstName);
-        formData.append("MiddleName", middleName);
-        formData.append("LastName", lastName);
-        formData.append("Email", email);
-        formData.append("UserName", username);
-        formData.append("Password", password);
-        formData.append("PhoneNumber", phone);
-        formData.append("City", city);
-        if (image) {
-            formData.append("Image", image); // Include the image file if present
-        }
-        console.log([...formData]);
+    const strengthLabel: Record<string, string> = { weak: 'Слабкий', medium: 'Середній', strong: 'Сильний' };
+    const strength = getStrength(form.password);
+
+    const validate = () => {
+        const e: Record<string, string> = {};
+        if (!form.firstName)   e.firstName   = "Введіть ім'я";
+        if (!form.lastName)    e.lastName    = 'Введіть прізвище';
+        if (!form.userName)    e.userName    = 'Введіть нікнейм';
+        if (!form.email)       e.email       = 'Введіть email';
+        if (!form.phoneNumber) e.phoneNumber = 'Введіть телефон';
+        if (!form.city)        e.city        = 'Введіть місто';
+        if (!form.password)    e.password    = 'Введіть пароль';
+        if (!photo)            e.photo       = 'Завантажте фото профілю';
+        if (form.password !== form.confirm) e.confirm = 'Паролі не співпадають';
+        return e;
+    };
+
+    const handleSubmit = async (ev: React.FormEvent) => {
+        ev.preventDefault();
+        const e = validate();
+        if (Object.keys(e).length) { setErrors(e); return; }
+
+        setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5174/api/Accounts/Registration', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const formData = new FormData();
+            formData.append('FirstName',   form.firstName);
+            formData.append('LastName',    form.lastName);
+            formData.append('MiddleName',  form.middleName);
+            formData.append('UserName',    form.userName);
+            formData.append('Email',       form.email);
+            formData.append('PhoneNumber', form.phoneNumber);
+            formData.append('City',        form.city);
+            formData.append('Password',    form.password);
+            if (photo) formData.append('Image', photo);
 
-            // Handle the response
-            const data = response.data;
-            localStorage.setItem('token', data.token);  // Store the token
-            dispatch(register(data.token));  // Update the auth state in Redux
-            navigate('/account');  // Redirect to the profile page
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                console.error('Error during registration:', error.response.data);
-                const newErrors: { [key: string]: string } = {};
-                // Optionally, set the error messages to your state
-                const validationErrors = error.response.data.errors;
+            const response = await api.post('/api/Accounts/Registration', formData);
 
-                for (const key in validationErrors) {
-                    newErrors[key] = validationErrors[key].join(', '); // Join error messages for each field
-                }
-                setErrors(newErrors); // Update errors state to show to the user
-            } else {
-                console.error('Unexpected error during registration:', error);
-            }
+            // ASP.NET Core повертає camelCase: token, firstName, lastName
+            const token: string = response.data.token;
+            localStorage.setItem('token', token);
+            dispatch(login({
+                user: {
+                    name: `${form.firstName} ${form.lastName}`,
+                    id: 0,
+                    location: form.city,
+                    rating: 0,
+                    imageUrl: [],
+                },
+                token,
+            }));
+            navigate('/');
+        } catch (err: any) {
+            const msg = err?.response?.data?.Message || err?.response?.data || 'Помилка реєстрації';
+            setErrors({ general: typeof msg === 'string' ? msg : JSON.stringify(msg) });
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
-        const togglePasswordVisibility = () => {
-            setShowPassword(!showPassword);
-        };
+    const EyeIcon = ({ show }: { show: boolean }) => show ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+            <line x1="1" y1="1" x2="23" y2="23" />
+        </svg>
+    ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    );
 
-        return (
-            <form className="auth-form" onSubmit={handleRegister}>
-                <img src="/images/register-car.png" alt="Car" className="auth-car"/>
-                <div className="auth-container">
+    return (
+        <>
+            <h2 className="auth-title">Створіть свій акаунт на сайті!</h2>
 
-                    <input
-                        type="text"
-                        placeholder="Повне ім`я"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className={errors.fullName ? 'input-error' : ''}
-                    />
-                    {errors.fullName && <p className="error-message">{errors.fullName}</p>}
-                    <input
-                        type="email"
-                        placeholder="Електронна адреса"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={errors.email ? 'input-error' : ''}
-                    />
-                    {errors.email && <p className="error-message">{errors.email}</p>}
+            <form onSubmit={handleSubmit} noValidate>
 
-
-                    <input
-                        type="text"
-                        placeholder="Назва користувача"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className={errors.username ? 'input-error' : ''}
-                    />
-                    {errors.username && <p className="error-message">{errors.username}</p>}
-
-                    <input
-                        type="text"
-                        placeholder="Номер телефону"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className={errors.email ? 'input-error' : ''}
-                    />
-                    {errors.phone && <p className="error-message">{errors.phone}</p>}
-
-                    <input
-                        type="text"
-                        placeholder="Місто"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className={errors.email ? 'input-error' : ''}
-                    />
-                    {errors.phone && <p className="error-message">{errors.phone}</p>}
-
-                    <div className="password-container">
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Пароль"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className={`password-input ${errors.password ? 'input-error' : ''}`}
-                        />
-                        <img
-                            src="/images/open-eye.png"
-                            alt="Toggle Password Visibility"
-                            onClick={togglePasswordVisibility}
-                            className="password-toggle-icon"
-                        />
+                {/* Фото профілю */}
+                <div className="auth-field">
+                    <label>Фото профілю</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{
+                            width: 56, height: 56, borderRadius: '50%',
+                            background: '#f0f0f0',
+                            border: `2px solid ${errors.photo ? '#ef4444' : '#e0e0e0'}`,
+                            overflow: 'hidden', flexShrink: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            {photoPreview
+                                ? <img src={photoPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            }
+                        </div>
+                        <label style={{
+                            padding: '8px 16px', borderRadius: 8,
+                            border: `1.5px solid ${errors.photo ? '#ef4444' : '#e0e0e0'}`,
+                            background: '#fff', fontSize: 13, fontWeight: 600,
+                            cursor: 'pointer', color: '#333',
+                        }}>
+                            {photo ? 'Змінити фото' : '+ Завантажити'}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={handlePhotoChange}
+                            />
+                        </label>
+                        {photo && (
+                            <span style={{ fontSize: 12, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                                {photo.name}
+                            </span>
+                        )}
                     </div>
-                    {errors.password && <p className="error-message">{errors.password}</p>}
+                    {errors.photo && <span className="auth-error-text">{errors.photo}</span>}
+                </div>
 
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
-                        className="file-input"
-                    />
-
-                    <button type="submit" className="auth-button">
-                        Зареєструватися
-                    </button>
-                    <div>
-                        <span>Вже маєте акаунт?</span>
-                        <Link to='/auth/login'>Увійти</Link>
+                {/* Ім'я + Прізвище */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px' }}>
+                    <div className="auth-field">
+                        <label>Ім'я</label>
+                        <div className="auth-input-wrap">
+                            <input className={`auth-input ${errors.firstName ? 'error' : ''}`} type="text"
+                                   value={form.firstName} onChange={e => change('firstName', e.target.value)} />
+                        </div>
+                        {errors.firstName && <span className="auth-error-text">{errors.firstName}</span>}
+                    </div>
+                    <div className="auth-field">
+                        <label>Прізвище</label>
+                        <div className="auth-input-wrap">
+                            <input className={`auth-input ${errors.lastName ? 'error' : ''}`} type="text"
+                                   value={form.lastName} onChange={e => change('lastName', e.target.value)} />
+                        </div>
+                        {errors.lastName && <span className="auth-error-text">{errors.lastName}</span>}
                     </div>
                 </div>
+
+                {/* По батькові */}
+                <div className="auth-field">
+                    <label>По батькові <span style={{ color: '#aaa', fontSize: 11 }}>(необов'язково)</span></label>
+                    <div className="auth-input-wrap">
+                        <input className="auth-input" type="text"
+                               value={form.middleName} onChange={e => change('middleName', e.target.value)} />
+                    </div>
+                </div>
+
+                {/* Нікнейм */}
+                <div className="auth-field">
+                    <label>Нікнейм</label>
+                    <div className="auth-input-wrap">
+                        <input className={`auth-input ${errors.userName ? 'error' : ''}`} type="text"
+                               value={form.userName} onChange={e => change('userName', e.target.value)} />
+                    </div>
+                    {errors.userName && <span className="auth-error-text">{errors.userName}</span>}
+                </div>
+
+                {/* Email */}
+                <div className="auth-field">
+                    <label>Email</label>
+                    <div className="auth-input-wrap">
+                        <input className={`auth-input ${errors.email ? 'error' : ''}`} type="email"
+                               value={form.email} onChange={e => change('email', e.target.value)} />
+                    </div>
+                    {errors.email && <span className="auth-error-text">{errors.email}</span>}
+                </div>
+
+                {/* Телефон + Місто */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px' }}>
+                    <div className="auth-field">
+                        <label>Телефон</label>
+                        <div className="auth-input-wrap">
+                            <input className={`auth-input ${errors.phoneNumber ? 'error' : ''}`} type="tel"
+                                   value={form.phoneNumber} onChange={e => change('phoneNumber', e.target.value)}
+                                   placeholder="+380..." />
+                        </div>
+                        {errors.phoneNumber && <span className="auth-error-text">{errors.phoneNumber}</span>}
+                    </div>
+                    <div className="auth-field">
+                        <label>Місто</label>
+                        <div className="auth-input-wrap">
+                            <input className={`auth-input ${errors.city ? 'error' : ''}`} type="text"
+                                   value={form.city} onChange={e => change('city', e.target.value)} />
+                        </div>
+                        {errors.city && <span className="auth-error-text">{errors.city}</span>}
+                    </div>
+                </div>
+
+                {/* Пароль */}
+                <div className="auth-field">
+                    <label>Пароль</label>
+                    <div className="auth-input-wrap">
+                        <input className={`auth-input ${errors.password ? 'error' : ''}`}
+                               type={showPass ? 'text' : 'password'}
+                               value={form.password} onChange={e => change('password', e.target.value)} />
+                        <button type="button" className="auth-input-icon" onClick={() => setShowPass(v => !v)}>
+                            <EyeIcon show={showPass} />
+                        </button>
+                    </div>
+                    {strength && (
+                        <div className="password-strength">
+                            <span className="strength-label">Складність: {strengthLabel[strength]}</span>
+                            <div className="strength-bar">
+                                <div className={`strength-fill ${strength}`} />
+                            </div>
+                        </div>
+                    )}
+                    {errors.password && <span className="auth-error-text">{errors.password}</span>}
+                </div>
+
+                {/* Підтвердження пароля */}
+                <div className="auth-field">
+                    <label>Підтвердь пароль</label>
+                    <div className="auth-input-wrap">
+                        <input className={`auth-input ${errors.confirm ? 'error' : ''}`}
+                               type={showConfirm ? 'text' : 'password'}
+                               value={form.confirm} onChange={e => change('confirm', e.target.value)} />
+                        <button type="button" className="auth-input-icon" onClick={() => setShowConfirm(v => !v)}>
+                            <EyeIcon show={showConfirm} />
+                        </button>
+                    </div>
+                    {errors.confirm && <span className="auth-error-text">{errors.confirm}</span>}
+                </div>
+
+                {/* Загальна помилка */}
+                {errors.general && (
+                    <div style={{ background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: 12 }}>
+                        <span className="auth-error-text">{errors.general}</span>
+                    </div>
+                )}
+
+                <p className="auth-social-label">Або зареєструйтесь через</p>
+                <div className="auth-socials">
+                    <button type="button" className="social-btn google">G</button>
+                    <button type="button" className="social-btn apple">🍎</button>
+                    <button type="button" className="social-btn facebook">f</button>
+                </div>
+
+                <button type="submit" className="auth-submit" disabled={loading}>
+                    {loading ? 'Завантаження...' : 'Зареєструватись'}
+                </button>
+
+                <p className="auth-terms">
+                    Реєструючись, ви погоджуєтесь з умовами{' '}
+                    <a href="#">корпоративного користування</a> платформи.{' '}
+                    <a href="#">Детальніше</a>
+                </p>
             </form>
-        );
-    };
+
+            <div className="auth-bottom-link" style={{ marginTop: 16 }}>
+                Вже маєте акаунт? <button type="button" onClick={onSwitch}>Увійти</button>
+            </div>
+        </>
+    );
+};
+
 export default Register;

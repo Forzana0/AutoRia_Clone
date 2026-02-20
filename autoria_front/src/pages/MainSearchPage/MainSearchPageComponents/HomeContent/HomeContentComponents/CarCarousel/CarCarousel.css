@@ -1,30 +1,83 @@
-
-
-
-.arrow {
-    color: #2C4494;
-    top: 1556px;
-    margin: 10px;
+.car-carousel-section {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 0 16px;
 }
 
-
-
-.cars-container {
+.section-header {
     display: flex;
-    justify-content: space-evenly;
-    flex-grow: 1;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
-.btn-none-styles{
-    background: none;
-    border:none;
-    padding: 0;
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1d23;
 }
-.btn-none-styles:focus,
-.btn-none-styles:focus-visible,
-.btn-none-styles:active {
-    outline: none;
-    box-shadow: none;
-    background-color: transparent;
-    box-shadow: none;
+
+.carousel-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.carousel-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #4b5563;
+    transition: all 0.2s;
+}
+
+.carousel-btn:hover:not(:disabled) {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.carousel-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.carousel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.carousel-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px dashed #e5e7eb;
+    gap: 12px;
+}
+
+.carousel-empty span {
+    font-size: 40px;
+}
+
+.carousel-empty p {
+    font-size: 14px;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+@media (max-width: 900px) {
+    .carousel-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .carousel-grid { grid-template-columns: 1fr; }
 }

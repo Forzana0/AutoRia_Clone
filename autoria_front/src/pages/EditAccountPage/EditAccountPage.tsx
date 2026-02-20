@@ -1,31 +1,8 @@
-// Libraries
-import React from "react";
-import { Layout } from 'antd';
+import React from 'react';
+import ProfileEditing from './ProfileEditingComponents/ProfileEditing';
 
-// Styles
-import './EditAccountPage.css';
-
-// Components
-import PagesFooter from "../../components/footer/PagesFooter";
-import {Outlet} from "react-router-dom";
-import Navbar from "../../components/navbar/Navbar";
-
-
-const { Content,Footer } = Layout;
-
-
-const MainSearchPage: React.FC = () => {
-    return (
-        <Layout className="edit-account-layout">
-             <Navbar/>
-            <Content>
-                <Outlet />
-            </Content>
-            <Footer className="footer">
-                <PagesFooter/>
-            </Footer>
-        </Layout>
-    );
+const EditAccountPage: React.FC = () => {
+    return <ProfileEditing />;
 };
 
-export default MainSearchPage;
+export default EditAccountPage;

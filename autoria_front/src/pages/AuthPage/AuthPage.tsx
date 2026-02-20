@@ -1,31 +1,64 @@
-// Libraries
-import React from "react";
-import { Layout } from "antd";
-import { Outlet } from "react-router-dom";
-
-// Styles
+import React, { useState } from 'react';
 import './AuthPage.css';
+import Login from './AuthPageComponents/Login/Login';
+import Register from './AuthPageComponents/Register/Register';
+import ForgotPassword from './AuthPageComponents/ForgotPassword/ForgotPassword';
+import EnterCode from './AuthPageComponents/EnterCode/EnterCode';
+import NewPassword from './AuthPageComponents/NewPassword/NewPassword';
+import PasswordSuccess from './AuthPageComponents/PasswordSuccess/PasswordSuccess';
 
-// Components
-import PagesFooter from "../../components/footer/PagesFooter";
-import Navbar from "../../components/navbar/Navbar";
-
+type Screen = 'login' | 'register' | 'forgot' | 'code' | 'newpass' | 'success';
 
 const AuthPage: React.FC = () => {
+    const [screen, setScreen] = useState<Screen>('login');
+    const [resetEmail, setResetEmail] = useState('');
+
+    const renderScreen = () => {
+        switch (screen) {
+            case 'login':
+                return (
+                    <Login
+                        onSwitch={() => setScreen('register')}
+                        onForgot={() => setScreen('forgot')}
+                    />
+                );
+            case 'register':
+                return <Register onSwitch={() => setScreen('login')} />;
+            case 'forgot':
+                return (
+                    <ForgotPassword
+                        onBack={() => setScreen('login')}
+                        onNext={(email) => { setResetEmail(email); setScreen('code'); }}
+                    />
+                );
+            case 'code':
+                return (
+                    <EnterCode
+                        onBack={() => setScreen('forgot')}
+                        onNext={() => setScreen('newpass')}
+                        onResend={() => { /* TODO: resend code */ }}
+                    />
+                );
+            case 'newpass':
+                return (
+                    <NewPassword
+                        onBack={() => setScreen('code')}
+                        onSuccess={() => setScreen('success')}
+                    />
+                );
+            case 'success':
+                return <PasswordSuccess />;
+            default:
+                return null;
+        }
+    };
+
     return (
-        <Layout className="auth-layout">
-            <Navbar additionalClass="darkly" />
-            <img src="/images/auth-fon-vector1.png" alt="Road" className="background-image-1"/>
-            <img src="/images/auth-fon-vector2.png" alt="Fon1" className="background-image-2"/>
-            <img src="/images/auth-footer-fon.png" alt="Fon2" className="background-image-3"/>
-            <div className="container-content">
-                <h1>Автівки, перевірені людьми</h1>
-                <Outlet/>
+        <div className="auth-page">
+            <div className="auth-card">
+                {renderScreen()}
             </div>
-            <footer className="footer">
-                <PagesFooter/>
-            </footer>   
-        </Layout>
+        </div>
     );
 };
 

@@ -1,34 +1,16 @@
-// Libraries
-import React from "react";
-import { Layout } from 'antd';
-import { Outlet } from 'react-router-dom';
-
-// Styles
+import React from 'react';
 import './MainSearchPage.css';
-
-// Components
-import PagesFooter from "../../components/footer/PagesFooter";
-import MainSearchHeader from "./MainSearchPageComponents/Header/MainSearchHeader";
-
-
-const { Header, Content, Footer } = Layout;
-
+import MainSearchHeader from './MainSearchPageComponents/Header/MainSearchHeader';
+import CarSearchForm from './MainSearchPageComponents/Header/HeaderComponents/CarSearchForm';
+import HomeContent from './MainSearchPageComponents/HomeContent/HomeContent';
 
 const MainSearchPage: React.FC = () => {
     return (
-        <Layout className="layout">
-            <Header className="header">
-                <MainSearchHeader/>
-            </Header>
-
-            <Content className="content">
-                <Outlet />
-            </Content>
-
-            <Footer className="footer">
-                <PagesFooter/>
-            </Footer>
-        </Layout>
+        <div className="main-search-page">
+            <MainSearchHeader />
+            <CarSearchForm />
+            <HomeContent />
+        </div>
     );
 };
 

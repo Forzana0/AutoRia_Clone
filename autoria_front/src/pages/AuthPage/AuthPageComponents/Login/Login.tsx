@@ -1,121 +1,127 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { login } from '../../../../redux/authSlice.ts';
-import '../AuthPageComponents.css';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../../../../redux/authSlice';
+import api from '../../../../http';
 
-const Login: React.FC = () => {
-    const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+interface LoginProps {
+    onSwitch: () => void;
+    onForgot: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const dispatch = useDispatch();  // Create Redux dispatcher
 
-    const validateForm = (): boolean => {
-        const newErrors: { [key: string]: string } = {};
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+    const [loading, setLoading] = useState(false);
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            newErrors.email = 'Будь ласка, введіть дійсну електронну адресу.';
-            setEmail('');  // Clear the input if invalid
-        }
-
-        // Password validation
-        if (password.length < 6) {
-            newErrors.password = 'Пароль має містити принаймні 6 символів.';
-            setPassword('');  // Clear the input if invalid
-        }
-
-        setErrors(newErrors);
-
-        // Return true if there are no errors
-        return Object.keys(newErrors).length === 0;
+    const validate = () => {
+        const e: typeof errors = {};
+        if (!email)    e.email    = 'Введіть email';
+        if (!password) e.password = 'Введіть пароль';
+        return e;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (ev: React.FormEvent) => {
+        ev.preventDefault();
+        const e = validate();
+        if (Object.keys(e).length) { setErrors(e); return; }
 
-        // Run validation before submitting
-        if (!validateForm()) {
-            return;
-        }
-
+        setLoading(true);
         try {
-            const response = await fetch('http://localhost:5174/api/Accounts/SignIn', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ Email: email, Password: password }),
-            });
+            const response = await api.post('/api/Accounts/SignIn', { email, password });
 
-            if (!response.ok) {
-                throw new Error('Login failed');
-            }
-
-            const { token } = await response.json(); // Отримуємо лише токен
-
-            // Зберігаємо токен у Redux
-            dispatch(login(token));
-
-            navigate('/search');
-        } catch (error) {
-            console.error('Error during login:', error);
-            alert('Невірний логін або пароль');
+            // ASP.NET Core повертає camelCase: token, firstName, lastName
+            const token: string = response.data.token;
+            localStorage.setItem('token', token);
+            dispatch(login({
+                user: {
+                    name: `${response.data.firstName} ${response.data.lastName}`,
+                    id: 0,
+                    location: '',
+                    rating: 0,
+                    imageUrl: [],
+                },
+                token,
+            }));
+            navigate('/');
+        } catch (err: any) {
+            const msg = err?.response?.data || 'E-mail або пароль введені не правильно';
+            setErrors({ general: typeof msg === 'string' ? msg : 'Невірні дані' });
+        } finally {
+            setLoading(false);
         }
-    };
-
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
     };
 
     return (
-        <form className="auth-form" onSubmit={handleSubmit}>
-            <img src="/images/login-car.png" alt="Car" className="auth-car" />
-            <div className="auth-container">
-                <div className="auth-social-container">
-                    <img src="/images/apple.png" alt="Apple" />
-                    <img src="/images/google.png" alt="Google" />
-                    <img src="/images/fbook.png" alt="Facebook" />
+        <>
+            <h2 className="auth-title">Увійдіть в свій акаунт</h2>
+
+            <form onSubmit={handleSubmit} noValidate>
+                <div className="auth-field">
+                    <label>Email</label>
+                    <div className="auth-input-wrap">
+                        <input
+                            className={`auth-input ${errors.email || errors.general ? 'error' : ''}`}
+                            type="email"
+                            value={email}
+                            onChange={e => { setEmail(e.target.value); setErrors({}); }}
+                        />
+                    </div>
+                    {errors.email && <span className="auth-error-text">{errors.email}</span>}
                 </div>
-                <h3>або</h3>
 
-                <input
-                    type="email"
-                    placeholder="Електронна адреса"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={errors.email ? 'input-error' : ''}
-                />
-                {errors.email && <p className="error-message">{errors.email}</p>}
-
-                <div className="password-container">
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={`password-input ${errors.password ? 'input-error' : ''}`}
-                    />
-                    <img
-                        src="/images/open-eye.png"
-                        alt="Toggle Password Visibility"
-                        onClick={togglePasswordVisibility}
-                        className="password-toggle-icon"
-                    />
+                <div className="auth-field">
+                    <label>Пароль</label>
+                    <div className="auth-input-wrap">
+                        <input
+                            className={`auth-input ${errors.password || errors.general ? 'error' : ''}`}
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={e => { setPassword(e.target.value); setErrors({}); }}
+                        />
+                        <button type="button" className="auth-input-icon" onClick={() => setShowPassword(v => !v)}>
+                            {showPassword ? (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            ) : (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+                    {errors.general && <span className="auth-error-text">{errors.general}</span>}
                 </div>
-                {errors.password && <p className="error-message">{errors.password}</p>}
 
-                <a href="/edit-account/password/forgot">Забули пароль?</a>
-                <button type="submit" className="auth-button">
-                    Увійти
+                <button type="button" className="auth-forgot" onClick={onForgot}>
+                    Забули пароль?
                 </button>
-                <div>
-                    <span>Не маєте акаунту?</span>
-                    <Link to='/auth/register'>Зареєструватися</Link>
+
+                <p className="auth-social-label">Увійдіть за допомогою</p>
+                <div className="auth-socials">
+                    <button type="button" className="social-btn google">G</button>
+                    <button type="button" className="social-btn apple">🍎</button>
+                    <button type="button" className="social-btn facebook">f</button>
                 </div>
+
+                <button type="submit" className="auth-submit" disabled={loading}>
+                    {loading ? 'Завантаження...' : 'Увійти'}
+                </button>
+            </form>
+
+            <div className="auth-bottom-link">
+                <button type="button" onClick={onSwitch}>Зареєструватись на сайт</button>
             </div>
-        </form>
+        </>
     );
 };
 
