@@ -32,6 +32,14 @@ const Navbar: React.FC = () => {
         navigate('/');
     };
 
+    const handleAddAd = () => {
+        if (isLoggedIn) {
+            navigate('/post-ad');
+        } else {
+            navigate('/auth');
+        }
+    };
+
     return (
         <nav className="navbar">
             <div className="navbar-top">
@@ -45,7 +53,7 @@ const Navbar: React.FC = () => {
                 <Link to="/" className="navbar-logo">AUTLY</Link>
 
                 <div className="navbar-right">
-                    <button className="btn-add-ad" onClick={() => navigate('/post-ad')}>
+                    <button className="btn-add-ad" onClick={handleAddAd}>
                         + Додати оголошення
                     </button>
 

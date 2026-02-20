@@ -43,6 +43,13 @@ const PostAdPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const userId = token ? decodeToken(token)?.id : null;
 
+    // ── Redirect to auth if not logged in ──
+    useEffect(() => {
+        if (!userId) {
+            navigate('/auth');
+        }
+    }, [userId, navigate]);
+
     const [step, setStep] = useState<Step>('type');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -100,8 +107,7 @@ const PostAdPage: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const target = e.target;
-        const value = target.value;
-        setForm(f => ({ ...f, [target.name]: value }));
+        setForm(f => ({ ...f, [target.name]: target.value }));
     };
 
     const handleClear = () => {
@@ -124,7 +130,7 @@ const PostAdPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!userId) { setError('Спочатку увійдіть в акаунт'); return; }
+        if (!userId) { navigate('/auth'); return; }
         if (photos.length === 0) { setError('Додайте хоча б одне фото'); return; }
 
         setLoading(true);
@@ -178,6 +184,9 @@ const PostAdPage: React.FC = () => {
             setLoading(false);
         }
     };
+
+    // Якщо не авторизований — нічого не рендеримо (useEffect вже перекинув)
+    if (!userId) return null;
 
     // ── STEP: type ──
     if (step === 'type') return (
@@ -283,7 +292,6 @@ const PostAdPage: React.FC = () => {
                     <button className="post-ad-clear" onClick={handleClear}>Очистити все ×</button>
                 </div>
 
-                {/* Основне */}
                 <section className="form-section">
                     <h3 className="form-section-title">Основне</h3>
                     <div className="form-grid">
@@ -317,7 +325,6 @@ const PostAdPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Модифікація */}
                 <section className="form-section">
                     <h3 className="form-section-title">Модифікація</h3>
                     <div className="form-grid">
@@ -351,7 +358,6 @@ const PostAdPage: React.FC = () => {
                             <label>Об'єм двигуна</label>
                             <select name="engineVolume" value={form.engineVolume} onChange={handleChange}>
                                 <option value="">Оберіть</option>
-                                {/* EngineVolumeVm має поле volume, не name */}
                                 {engineVolumes.map(e => <option key={e.id} value={e.volume}>{e.volume}</option>)}
                             </select>
                         </div>
@@ -359,7 +365,6 @@ const PostAdPage: React.FC = () => {
                             <label>Кількість місць</label>
                             <select name="numberOfSeats" value={form.numberOfSeats} onChange={handleChange}>
                                 <option value="">Оберіть</option>
-                                {/* NumberOfSeatsVm має поля number і seatType */}
                                 {numberOfSeats.map(n => (
                                     <option key={n.id} value={String(n.number)}>
                                         {n.number} {n.seatType}

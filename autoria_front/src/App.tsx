@@ -8,17 +8,18 @@ import AuthPage from './pages/AuthPage/AuthPage';
 import AccountPage from './pages/AccountPage/AccountPage';
 import EditAccountPage from './pages/EditAccountPage/EditAccountPage';
 import PostAdPage from './pages/PostAdPage/PostAdPage';
-import ProductPage from "./pages/ProductPage/ProductPage.tsx";
+import ProductPage from './pages/ProductPage/ProductPage';
 
 const App: React.FC = () => {
     return (
         <BrowserRouter>
             <Navbar />
             <Routes>
-                <Route path="/"        element={<MainSearchPage />} />
-                <Route path="/auth"    element={<AuthPage />} />
-                <Route path="/post-ad" element={<PostAdPage />} />
-
+                <Route path="/"                element={<MainSearchPage />} />
+                <Route path="/auth"            element={<AuthPage />} />
+                <Route path="/post-ad"         element={<PostAdPage />} />
+                <Route path="/product/:id"     element={<ProductPage />} />
+                <Route path="/carproduct/:id"  element={<ProductPage />} />
 
                 <Route path="/account" element={<AccountPage />}>
                     <Route index                element={<div>Статистика (coming soon)</div>} />

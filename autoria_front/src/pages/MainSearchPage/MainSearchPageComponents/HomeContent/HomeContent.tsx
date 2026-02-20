@@ -14,7 +14,7 @@ interface CarVm {
     mileage?: number;
     transmissionType?: { name: string };
     fuelTypes?: { name: string };
-    price?: { amount: number; currencyType?: { name: string } };
+    price?: number;
     photos?: { name: string }[];
 }
 
@@ -25,7 +25,7 @@ const mapCarVmToCard = (car: CarVm) => ({
     mileage: car.mileage ? `${Math.round(car.mileage / 1000)} тис. км` : undefined,
     transmission: car.transmissionType?.name,
     fuel: car.fuelTypes?.name,
-    priceUsd: car.price?.amount || 0,
+    priceUsd: car.price || 0,
     image: car.photos?.[0]?.name
         ? `http://localhost:5174/images/800_${car.photos[0].name}`
         : undefined,
@@ -34,24 +34,24 @@ const mapCarVmToCard = (car: CarVm) => ({
 const services = [
     {
         title: 'Розміщення оголошення',
-        description:
-            'Швидке розміщення продажу автомобіля на платформі. Сервіс дозволяє користувачам створювати оголошення, додавати опис, фотографії та контактну інформацію для потенційних покупців.',
+        description: 'Швидке розміщення продажу автомобіля на платформі. Сервіс дозволяє користувачам створювати оголошення, додавати опис, фотографії та контактну інформацію для потенційних покупців.',
         btnLabel: 'Додати оголошення',
         route: '/post-ad',
+        requiresAuth: true,
     },
     {
         title: 'Обране та порівняння',
-        description:
-            'Зручна робота з обраними пропозиціями. Користувачі можуть зберігати оголошення до обраного та порівнювати їх між собою за ключовими параметрами.',
+        description: 'Зручна робота з обраними пропозиціями. Користувачі можуть зберігати оголошення до обраного та порівнювати їх між собою за ключовими параметрами.',
         btnLabel: 'Переглянути обране',
         route: '/account',
+        requiresAuth: true,
     },
     {
         title: 'Сповіщення про нові оголошення',
-        description:
-            'Актуальна інформація для користувача. Система сповіщень інформує користувача про нові оголошення відповідно до заданих параметрів пошуку.',
+        description: 'Актуальна інформація для користувача. Система сповіщень інформує користувача про нові оголошення відповідно до заданих параметрів пошуку.',
         btnLabel: 'Налаштувати сповіщення',
         route: '/account',
+        requiresAuth: true,
     },
 ];
 
@@ -59,6 +59,16 @@ const HomeContent: React.FC = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState<CarVm[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const isLoggedIn = !!localStorage.getItem('token');
+
+    const handleAuthNav = (route: string) => {
+        if (isLoggedIn) {
+            navigate(route);
+        } else {
+            navigate('/auth');
+        }
+    };
 
     useEffect(() => {
         const fetchCars = async () => {
@@ -79,10 +89,8 @@ const HomeContent: React.FC = () => {
 
     return (
         <div className="home-content">
-            {/* TOP Carousel */}
             <CarCarousel cars={topCars.map(mapCarVmToCard)} />
 
-            {/* Latest ads */}
             <section className="latest-ads-section">
                 <div className="section-header">
                     <h2 className="section-title">Останні додані оголошення</h2>
@@ -94,7 +102,7 @@ const HomeContent: React.FC = () => {
                     <div className="ads-empty">
                         <span>📋</span>
                         <p>Оголошень поки немає. Додайте перше!</p>
-                        <button className="btn-primary" onClick={() => navigate('/post-ad')}>
+                        <button className="btn-primary" onClick={() => handleAuthNav('/post-ad')}>
                             + Додати оголошення
                         </button>
                     </div>
@@ -114,7 +122,6 @@ const HomeContent: React.FC = () => {
                 )}
             </section>
 
-            {/* Info text */}
             <div className="info-text-section">
                 <div className="info-text-inner">
                     <h2>Купівля та продаж авто в Україні з Autly</h2>
@@ -125,7 +132,6 @@ const HomeContent: React.FC = () => {
                 </div>
             </div>
 
-            {/* Services */}
             <div className="services-section">
                 <div className="services-inner">
                     <h2>Корисні сервіси</h2>
@@ -135,7 +141,10 @@ const HomeContent: React.FC = () => {
                             <div className="service-card" key={s.title}>
                                 <h3>{s.title}</h3>
                                 <p>{s.description}</p>
-                                <button className="btn-service" onClick={() => navigate(s.route)}>
+                                <button
+                                    className="btn-service"
+                                    onClick={() => s.requiresAuth ? handleAuthNav(s.route) : navigate(s.route)}
+                                >
                                     {s.btnLabel}
                                 </button>
                             </div>

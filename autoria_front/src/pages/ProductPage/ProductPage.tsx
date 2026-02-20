@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ProductPage.css';
 import { UserCar } from '../../interfaces/Car';
-import Navbar from '../../components/navbar/Navbar';
-import PagesFooter from '../../components/footer/PagesFooter';
 import CarCard from '../../components/carCard/CarCard';
 
 const API = 'http://localhost:5174';
@@ -14,6 +12,8 @@ const ProductPage: React.FC = () => {
     const navigate = useNavigate();
     const [car, setCar] = useState<UserCar | null>(null);
     const [latestCars, setLatestCars] = useState<any[]>([]);
+    const [sellerAdsCount, setSellerAdsCount] = useState<number | null>(null);
+    const [sellerDescription, setSellerDescription] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [activePhoto, setActivePhoto] = useState(0);
 
@@ -24,9 +24,25 @@ const ProductPage: React.FC = () => {
                     axios.get(`${API}/api/Car/${id}`),
                     axios.get(`${API}/api/Car`),
                 ]);
-                setCar(carRes.data);
+                const carData: UserCar = carRes.data;
+                setCar(carData);
+
                 const others = (allCarsRes.data as any[]).filter(c => c.id !== Number(id)).slice(0, 6);
                 setLatestCars(others);
+
+                // Fetch seller's ads count and description
+                if (carData.user?.userId) {
+                    try {
+                        const [userAdsRes, userRes] = await Promise.all([
+                            axios.get(`${API}/api/Car/user/${carData.user.userId}`),
+                            axios.get(`${API}/api/Accounts/GetUserById/${carData.user.userId}`),
+                        ]);
+                        setSellerAdsCount(Array.isArray(userAdsRes.data) ? userAdsRes.data.length : 0);
+                        setSellerDescription(userRes.data?.description || null);
+                    } catch {
+                        setSellerAdsCount(0);
+                    }
+                }
             } catch (e) {
                 console.error(e);
             } finally {
@@ -90,11 +106,8 @@ const ProductPage: React.FC = () => {
 
     return (
         <div className="pp-wrapper">
-            <Navbar />
-
-            {/* Hero section */}
+            {/* Hero */}
             <div className="pp-hero">
-                {/* Gallery */}
                 <div className="pp-gallery">
                     <div className="pp-main-photo">
                         {mainPhoto
@@ -134,21 +147,23 @@ const ProductPage: React.FC = () => {
                         <h3 className="pp-seller-name">{sellerName}</h3>
                     </div>
 
+                    {/* Опис і оголошення замість телефону */}
                     {car.user && (
-                        <ul className="pp-seller-meta">
-                            <li>• Телефон: {car.user.phoneNumber || '—'}</li>
-                        </ul>
+                        <div className="pp-seller-info">
+                            {sellerDescription && (
+                                <p className="pp-seller-desc">{sellerDescription}</p>
+                            )}
+                            {sellerAdsCount !== null && (
+                                <span className="pp-seller-ads-count">
+                                    📋 Оголошень: {sellerAdsCount}
+                                </span>
+                            )}
+                        </div>
                     )}
 
                     <div className="pp-seller-actions">
                         <button className="pp-btn-contact" disabled>Зв'язатися</button>
-                        <button
-                            className="pp-btn-profile"
-                            onClick={() => car.user?.userId && navigate(`/account`)}
-                            disabled
-                        >
-                            Профіль
-                        </button>
+                        <button className="pp-btn-profile" disabled>Профіль</button>
                     </div>
 
                     <div className="pp-verified">
@@ -160,7 +175,6 @@ const ProductPage: React.FC = () => {
             {/* Main info */}
             <div className="pp-content">
                 <div className="pp-info-left">
-                    {/* Title + price */}
                     <div className="pp-title-block">
                         <div className="pp-car-title">
                             <span className="pp-brand">{car.carBrand?.name} / {car.carModel?.name}</span>
@@ -174,7 +188,6 @@ const ProductPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Quick details */}
                     <div className="pp-quick-details">
                         {details.map((d, i) => (
                             <div key={i} className="pp-detail-item">
@@ -185,7 +198,6 @@ const ProductPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Description */}
                 <div className="pp-description">
                     <p>{car.description || 'Опис відсутній'}</p>
                 </div>
@@ -228,8 +240,6 @@ const ProductPage: React.FC = () => {
                     </div>
                 </div>
             )}
-
-            <PagesFooter />
         </div>
     );
 };
