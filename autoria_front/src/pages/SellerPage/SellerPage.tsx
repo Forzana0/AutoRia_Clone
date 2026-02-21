@@ -65,7 +65,6 @@ const SellerPage: React.FC = () => {
     const [reviewSent, setReviewSent] = useState(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
-    const [currentRating, setCurrentRating] = useState(0);
 
     const token = localStorage.getItem('token');
     const isLoggedIn = !!token;
@@ -80,7 +79,6 @@ const SellerPage: React.FC = () => {
                     axios.get(`${API}/api/Car/user/${userId}`),
                 ]);
                 setSeller(userRes.data);
-                setCurrentRating(Number(userRes.data?.rating) || 0);
                 setCars(carsRes.data || []);
             } catch (e) {
                 console.error(e);
@@ -94,7 +92,6 @@ const SellerPage: React.FC = () => {
     const refreshRating = async () => {
         try {
             const res = await axios.get(`${API}/api/Accounts/GetUserById/${userId}`);
-            setCurrentRating(Number(res.data?.rating) || 0);
             setSeller(res.data);
         } catch {}
     };
@@ -156,7 +153,7 @@ const SellerPage: React.FC = () => {
                         </div>
                         <div className="sp-name-row">
                             <h2 className="sp-name">{sellerName}</h2>
-                            <span className="sp-rating">{currentRating}/5 ★</span>
+                            <span className="sp-rating">{parseFloat(String(seller.rating ?? '0').replace(',', '.')) || 0}/5 ★</span>
                         </div>
                         {seller.description && (
                             <p className="sp-desc">{seller.description}</p>

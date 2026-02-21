@@ -4,6 +4,7 @@ import axios from 'axios';
 import './ProductPage.css';
 import { UserCar } from '../../interfaces/Car';
 import CarCard from '../../components/carCard/CarCard';
+import ReviewsModal from '../../components/ReviewsModal/ReviewsModal';
 
 const API = 'http://localhost:5174';
 
@@ -18,6 +19,7 @@ const ProductPage: React.FC = () => {
     const [sellerId, setSellerId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [activePhoto, setActivePhoto] = useState(0);
+    const [showReviews, setShowReviews] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,7 +34,6 @@ const ProductPage: React.FC = () => {
                 const others = (allCarsRes.data as any[]).filter(c => c.id !== Number(id)).slice(0, 6);
                 setLatestCars(others);
 
-                // userId може бути як userId так і id в залежності від API
                 const uid = carData.user?.userId || (carData.user as any)?.id;
                 if (uid) {
                     setSellerId(uid);
@@ -43,7 +44,7 @@ const ProductPage: React.FC = () => {
                         ]);
                         setSellerAdsCount(Array.isArray(userAdsRes.data) ? userAdsRes.data.length : 0);
                         setSellerDescription(userRes.data?.description || null);
-                        setSellerRating(Number(userRes.data?.rating) || 0);
+                        setSellerRating(parseFloat(String(userRes.data?.rating ?? '0').replace(',', '.')) || 0);
                     } catch {
                         setSellerAdsCount(0);
                     }
@@ -135,7 +136,6 @@ const ProductPage: React.FC = () => {
                 </div>
 
                 <div className="pp-seller-card">
-                    {/* Реальний рейтинг з API */}
                     <div className="pp-seller-rating">
                         {car.user ? `${sellerRating}/5 ★` : ''}
                     </div>
@@ -165,15 +165,13 @@ const ProductPage: React.FC = () => {
                     )}
 
                     <div className="pp-seller-actions">
+                        <button className="pp-btn-contact" onClick={() => setShowReviews(true)}>
+                            Відгуки {sellerRating > 0 ? `(${sellerRating}/5 ★)` : ''}
+                        </button>
                         <button
                             className="pp-btn-profile"
-                            onClick={() => {
-                                const uid = sellerId
-                                    || car.user?.userId
-                                    || (car.user as any)?.id
-                                    || (car.user as any)?.userId;
-                                if (uid) navigate(`/seller/${uid}`);
-                            }}
+                            onClick={() => sellerId && navigate(`/seller/${sellerId}`)}
+                            disabled={!sellerId}
                         >
                             Профіль
                         </button>
@@ -249,6 +247,10 @@ const ProductPage: React.FC = () => {
                         <button onClick={() => navigate('/search')}>Дивитись всі оголошення</button>
                     </div>
                 </div>
+            )}
+
+            {showReviews && sellerId && (
+                <ReviewsModal userId={sellerId} onClose={() => setShowReviews(false)} />
             )}
         </div>
     );
