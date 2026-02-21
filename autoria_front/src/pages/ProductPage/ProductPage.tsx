@@ -14,6 +14,8 @@ const ProductPage: React.FC = () => {
     const [latestCars, setLatestCars] = useState<any[]>([]);
     const [sellerAdsCount, setSellerAdsCount] = useState<number | null>(null);
     const [sellerDescription, setSellerDescription] = useState<string | null>(null);
+    const [sellerRating, setSellerRating] = useState<number>(0);
+    const [sellerId, setSellerId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [activePhoto, setActivePhoto] = useState(0);
 
@@ -30,15 +32,18 @@ const ProductPage: React.FC = () => {
                 const others = (allCarsRes.data as any[]).filter(c => c.id !== Number(id)).slice(0, 6);
                 setLatestCars(others);
 
-                // Fetch seller's ads count and description
-                if (carData.user?.userId) {
+                // userId може бути як userId так і id в залежності від API
+                const uid = carData.user?.userId || (carData.user as any)?.id;
+                if (uid) {
+                    setSellerId(uid);
                     try {
                         const [userAdsRes, userRes] = await Promise.all([
-                            axios.get(`${API}/api/Car/user/${carData.user.userId}`),
-                            axios.get(`${API}/api/Accounts/GetUserById/${carData.user.userId}`),
+                            axios.get(`${API}/api/Car/user/${uid}`),
+                            axios.get(`${API}/api/Accounts/GetUserById/${uid}`),
                         ]);
                         setSellerAdsCount(Array.isArray(userAdsRes.data) ? userAdsRes.data.length : 0);
                         setSellerDescription(userRes.data?.description || null);
+                        setSellerRating(Number(userRes.data?.rating) || 0);
                     } catch {
                         setSellerAdsCount(0);
                     }
@@ -106,7 +111,6 @@ const ProductPage: React.FC = () => {
 
     return (
         <div className="pp-wrapper">
-            {/* Hero */}
             <div className="pp-hero">
                 <div className="pp-gallery">
                     <div className="pp-main-photo">
@@ -130,10 +134,10 @@ const ProductPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Seller card */}
                 <div className="pp-seller-card">
+                    {/* Реальний рейтинг з API */}
                     <div className="pp-seller-rating">
-                        {car.user ? '5/5 ★' : ''}
+                        {car.user ? `${sellerRating}/5 ★` : ''}
                     </div>
                     <div className="pp-seller-top">
                         <div className="pp-seller-avatar">
@@ -147,7 +151,6 @@ const ProductPage: React.FC = () => {
                         <h3 className="pp-seller-name">{sellerName}</h3>
                     </div>
 
-                    {/* Опис і оголошення замість телефону */}
                     {car.user && (
                         <div className="pp-seller-info">
                             {sellerDescription && (
@@ -162,8 +165,18 @@ const ProductPage: React.FC = () => {
                     )}
 
                     <div className="pp-seller-actions">
-                        <button className="pp-btn-contact" disabled>Зв'язатися</button>
-                        <button className="pp-btn-profile" disabled>Профіль</button>
+                        <button
+                            className="pp-btn-profile"
+                            onClick={() => {
+                                const uid = sellerId
+                                    || car.user?.userId
+                                    || (car.user as any)?.id
+                                    || (car.user as any)?.userId;
+                                if (uid) navigate(`/seller/${uid}`);
+                            }}
+                        >
+                            Профіль
+                        </button>
                     </div>
 
                     <div className="pp-verified">
@@ -172,7 +185,6 @@ const ProductPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main info */}
             <div className="pp-content">
                 <div className="pp-info-left">
                     <div className="pp-title-block">
@@ -203,7 +215,6 @@ const ProductPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* All characteristics */}
             <div className="pp-all-details">
                 <h3 className="pp-section-title">Всі характеристики</h3>
                 <div className="pp-details-grid">
@@ -216,7 +227,6 @@ const ProductPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Latest ads */}
             {latestCars.length > 0 && (
                 <div className="pp-latest">
                     <h3 className="pp-section-title">Останні додані оголошення</h3>
