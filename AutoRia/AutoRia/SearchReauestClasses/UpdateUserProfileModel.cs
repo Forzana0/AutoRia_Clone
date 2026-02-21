@@ -1,5 +1,4 @@
 ﻿using AutoRia.Data.Entities;
-
 namespace AutoRia.SearchReauestClasses
 {
     public class UpdateUserProfileModel
@@ -12,6 +11,7 @@ namespace AutoRia.SearchReauestClasses
         public string UserName { get; set; } = null!;
         public string? City { get; set; } = null!;
         public string? Region { get; set; }
+        public string? Description { get; set; }
         //public string Rating { get; set; } = null!;
         public IFormFile? Photo { get; set; }
     }

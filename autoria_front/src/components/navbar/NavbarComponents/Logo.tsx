@@ -8,7 +8,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ isDarkMode }) => {
-  const logoSrc = isDarkMode ? '/images/logo-dark.png' : '/images/logo-light.png'; 
+  const logoSrc = isDarkMode ? '/images/logo-dark.png' : '/images/logo-light1.png';
 
   return (
     <Link to="/">

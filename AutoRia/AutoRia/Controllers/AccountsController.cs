@@ -54,10 +54,7 @@ namespace AutoRia.Controllers
             if (user is null || !await userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized("Невірні дані");
 
-            // Генеруємо токен
             var token = await jwtTokenService.CreateTokenAsync(user);
-
-            // Зберігаємо токен у таблиці AspNetUserTokens
             await userManager.SetAuthenticationTokenAsync(user, "JWT", "AccessToken", token);
 
             return Ok(new JwtTokenResponse
@@ -72,11 +69,7 @@ namespace AutoRia.Controllers
             try
             {
                 var user = await service.SignUpAsync(vm);
-
-                // Генеруємо токен
                 var token = await jwtTokenService.CreateTokenAsync(user);
-
-                // Зберігаємо токен у таблиці AspNetUserTokens
                 await userManager.SetAuthenticationTokenAsync(user, "JWT", "AccessToken", token);
 
                 return Ok(new JwtTokenResponse
@@ -90,9 +83,6 @@ namespace AutoRia.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (optional, depending on your logging strategy)
-                // _logger.LogError(ex, "Error occurred during user registration.");
-
                 return StatusCode(500, new { Message = "An error occurred during user registration.", Details = ex.Message });
             }
         }
@@ -122,91 +112,69 @@ namespace AutoRia.Controllers
                 return NotFound(new { Message = "User not found." });
 
             return Ok(user);
-
         }
-
 
         [HttpPost("update-profile/{userId}")]
         public async Task<IActionResult> UpdateProfile(string userId, [FromForm] UpdateUserProfileModel model)
         {
             if (model == null)
-            {
                 return BadRequest("Дані профілю не можуть бути порожніми");
-            }
 
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
-            {
                 return NotFound("Користувач не знайдений");
-            }
 
             user.FirstName = model.FirstName ?? user.FirstName;
             user.MiddleName = model.MiddleName ?? user.MiddleName;
             user.LastName = model.LastName ?? user.LastName;
+            user.Description = model.Description ?? user.Description;
 
-
-
-            // Find the city that matches the provided city name
             var cityEntity = await context.Cities
-                .Include(c => c.Region) // Ensure the region is included
+                .Include(c => c.Region)
                 .FirstOrDefaultAsync(c => c.Name == model.City);
 
             if (cityEntity != null)
             {
-                user.City = cityEntity.Name; // Assign the city entity
-                user.Region = cityEntity.Region.Name; // Assign the region associated with the city
+                user.City = cityEntity.Name;
+                user.Region = cityEntity.Region.Name;
             }
-            else { user.City = "Вказано не вірно"; user.Region = "Вказано не вірно"; }
+            else
+            {
+                user.City = "Вказано не вірно";
+                user.Region = "Вказано не вірно";
+            }
 
             if (model.Photo != null)
-            {
                 user.Photo = await imageService.SaveImageAsync(model.Photo);
-            }
+
             user.Email = model.Email ?? user.Email;
             user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
             user.UserName = model.UserName ?? user.UserName;
 
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
-            {
                 return BadRequest(result.Errors);
-            }
 
             if (signInManager != null)
-            {
                 await signInManager.RefreshSignInAsync(user);
-            }
 
             return Ok("Профіль успішно оновлено");
-
-
         }
 
         [HttpPut("update-password/{id}")]
         public async Task<IActionResult> UpdatePassword(string id, [FromBody] UpdatePasswordModel model)
         {
-            // Отримання користувача за ID
             var user = await userManager.FindByIdAsync(id);
             if (user == null)
-            {
                 return NotFound("Користувача не знайдено");
-            }
 
-            // Спроба зміни пароля
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             var resetPasswordResult = await userManager.ResetPasswordAsync(user, token, model.NewPassword);
 
             if (!resetPasswordResult.Succeeded)
-            {
-                // Якщо щось пішло не так, повертаємо помилки
                 return BadRequest(resetPasswordResult.Errors);
-            }
 
-            // Якщо зміни успішно застосовані
             return Ok("Пароль успішно оновлено");
         }
-
-
-
     }
 }

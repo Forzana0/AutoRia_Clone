@@ -49,7 +49,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }
 
     return (
         <div className={`profile-card ${collapsed ? 'collapsed' : ''}`}>
-            {/* Avatar */}
             <div className="profile-avatar">
                 {photoUrl ? (
                     <img src={photoUrl} alt={name} />
@@ -58,7 +57,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }
                 )}
             </div>
 
-            {/* Info — hidden when collapsed */}
             {!collapsed && (
                 <div className="profile-details">
                     <div className="profile-header-row">
@@ -67,7 +65,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, id, collapsed = false }
                                 ? `${userData.firstName} ${userData.lastName}`
                                 : name}
                         </h2>
-                        <span className="profile-rating">{rating}/10 ★</span>
+                        <span className="profile-rating">{rating}/5 ★</span>
                     </div>
                 </div>
             )}

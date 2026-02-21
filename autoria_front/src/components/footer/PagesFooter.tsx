@@ -66,7 +66,7 @@ const PagesFooter: React.FC = () => {
                 {/* Support */}
                 <div className="footer-col">
                     <h4>Служба підтримки:</h4>
-                    <p className="footer-phone">+380665216568</p>
+                    <p className="footer-phone">+380931005270</p>
                 </div>
             </div>
 

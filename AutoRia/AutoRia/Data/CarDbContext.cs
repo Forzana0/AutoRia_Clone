@@ -3,7 +3,6 @@ using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
 namespace AutoRia.Data
 {
     public class CarDbContext : IdentityDbContext<UserEntity, RoleEntity, int,
@@ -11,7 +10,6 @@ namespace AutoRia.Data
         IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public CarDbContext(DbContextOptions<CarDbContext> options) : base(options) { }
-
         public DbSet<CarEntity> Cars { get; set; }
         public DbSet<BodyTypeEntity> BodyTypes { get; set; }
         public DbSet<CarBrandEntity> Brands { get; set; }
@@ -26,12 +24,12 @@ namespace AutoRia.Data
         public DbSet<UserCarEntity> UserCars { get; set; } = null!;
         public DbSet<RegionEntity> Regions { get; set; }
         public DbSet<CityEntity> Cities { get; set; }
+        public DbSet<ReviewEntity> Reviews { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // UserRoleEntity builder
             modelBuilder.Entity<UserRoleEntity>(ur =>
             {
                 ur.HasKey(ur => new { ur.UserId, ur.RoleId });
@@ -45,32 +43,31 @@ namespace AutoRia.Data
                     .IsRequired();
             });
 
-
-            // Налаштування зв'язку між UserEntity та CarEntity через UserCarEntity
             modelBuilder.Entity<UserCarEntity>()
-                .HasKey(uc => new { uc.UserId, uc.CarId }); // Складаний ключ
-
+                .HasKey(uc => new { uc.UserId, uc.CarId });
             modelBuilder.Entity<UserCarEntity>()
-                .HasOne(uc => uc.User) // Один UserCar належить одному користувачу
-                    .WithMany(u => u.Cars) // Один користувач може мати багато UserCars
-                    .HasForeignKey(uc => uc.UserId) // Вказання зовнішнього ключа
+                .HasOne(uc => uc.User)
+                    .WithMany(u => u.Cars)
+                    .HasForeignKey(uc => uc.UserId)
                     .IsRequired();
             modelBuilder.Entity<UserCarEntity>()
-                .HasOne(uc => uc.Car) // Один UserCar належить одному автомобілю
-                .WithMany(c => c.UserCars) // Один автомобіль може належати багатьом UserCars
-                .HasForeignKey(uc => uc.CarId); // Вказання зовнішнього ключа
+                .HasOne(uc => uc.Car)
+                .WithMany(c => c.UserCars)
+                .HasForeignKey(uc => uc.CarId);
 
-
-            //RegionBuilder
             modelBuilder.Entity<CityEntity>()
-            .HasOne(c => c.Region)
-            .WithMany(r => r.Cities)
-            .HasForeignKey(c => c.RegionId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(c => c.Region)
+                .WithMany(r => r.Cities)
+                .HasForeignKey(c => c.RegionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-
-
+            // Reviews — no FK constraints to AspNetUsers to avoid cascade issues
+            modelBuilder.Entity<ReviewEntity>(r =>
+            {
+                r.HasKey(r => r.Id);
+                r.Property(r => r.Stars).IsRequired();
+                r.Property(r => r.DateCreated).IsRequired();
+            });
         }
     }
-
 }
