@@ -3,52 +3,44 @@ import './SearchCarCard.css';
 import { Car } from '../../../../../interfaces/Car';
 import { useNavigate } from 'react-router-dom';
 
+const API = 'http://localhost:5174';
+
 const SearchCarCard: React.FC<Car> = ({
-                                          carBrand,
-                                          carModel,
-                                          id,
-                                          year,
-                                          description,
-                                          city,
-                                          fuelTypes,
-                                          mileage,
-                                          photos
+                                          id, carBrand, carModel, year, city,
+                                          fuelTypes, transmissionType, mileage, photos, price
                                       }) => {
     const navigate = useNavigate();
 
-    function formatMileage(mileage: number): string {
-        if (mileage >= 1000) {
-            const kilometers = mileage / 1000;
-            return `${kilometers.toFixed(0)} тис. км`;
-        }
-        return `${mileage} км`;
-    }
+    const imgSrc = photos?.[0]?.name
+        ? `${API}/images/400_${photos[0].name}`
+        : null;
 
-    function handleClick() {
-        navigate(`/carproduct/${id}`);
-    }
+    const title = `${carBrand?.name || ''} ${carModel?.name || ''} ${year || ''}`.trim();
+
+    const tags = [
+        mileage ? `${Math.round(mileage / 1000)} тис. км` : null,
+        transmissionType?.name || null,
+        fuelTypes?.name || null,
+    ].filter(Boolean);
 
     return (
-        <div className="search-car-card" onClick={handleClick}>
-            <div className="search-car-card-img-container">
-                <img
-                    className="car-card-img"
-                    src={`http://localhost:5174/images/1200_${photos[0]?.name || 'default-image.jpg'}`} // Added fallback for photo
-                    alt={`${carBrand?.name || 'Бренд'} ${carModel?.name || 'Модель'} ${year || ''}`}
-                />
+        <div className="scc-card" onClick={() => navigate(`/product/${id}`)}>
+            <div className="scc-img">
+                {imgSrc
+                    ? <img src={imgSrc} alt={title} />
+                    : <div className="scc-no-img">📷</div>
+                }
             </div>
-            <div className="search-car-details">
-                <h3>{carBrand?.name || 'Бренд'} {carModel?.name || 'Модель'} {year || 'Рік не вказано'}</h3>
-                <p>{description || 'Опис відсутній'}</p>
-                <div className="price-and-like">
-                    {/* <p className="price">{formatPrice(price)} $</p> */}
-                    <img src="/images/n-solid-like.png" alt="Like" className="like-image" />
+            <div className="scc-body">
+                <h3 className="scc-title">{title}</h3>
+                {city?.name && (
+                    <div className="scc-city">📍 {city.name}</div>
+                )}
+                <div className="scc-tags">
+                    {tags.map((t, i) => <span key={i} className="scc-tag">{t}</span>)}
                 </div>
-                <hr />
-                <div className="geo-fuel-mileage-container">
-                    <p><img src="/images/geo.png" alt="Geo" />{city?.name || 'Інше місто'}</p>
-                    <p><img src="/images/fuel.png" alt="Fuel" />{fuelTypes?.name || 'Тип палива не вказано'}</p>
-                    <p><img src="/images/mileage.png" alt="Mileage" />{formatMileage(mileage)}</p>
+                <div className="scc-price">
+                    {price ? `${price.toLocaleString()} $` : '—'}
                 </div>
             </div>
         </div>
