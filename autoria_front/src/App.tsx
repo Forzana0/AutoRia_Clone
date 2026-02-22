@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/navbar/Navbar';
 import PagesFooter from './components/footer/PagesFooter';
@@ -13,9 +13,19 @@ import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
+// Скролить вгору при кожному переході між сторінками
+const ScrollToTop: React.FC = () => {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [pathname]);
+    return null;
+};
+
 const App: React.FC = () => {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Navbar />
             <Routes>
                 <Route path="/"                element={<MainSearchPage />} />

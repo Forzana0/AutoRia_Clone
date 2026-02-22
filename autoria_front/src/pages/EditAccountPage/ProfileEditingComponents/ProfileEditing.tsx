@@ -5,17 +5,10 @@ import axios from 'axios';
 import { RootState } from '../../../../redux/store';
 import './ProfileEditing.css';
 
-interface DecodedToken {
-    id?: string;
-}
+interface DecodedToken { id?: string; }
 
 const decodeToken = (token: string): DecodedToken | null => {
-    try {
-        const payload = token.split('.')[1];
-        return JSON.parse(atob(payload));
-    } catch {
-        return null;
-    }
+    try { return JSON.parse(atob(token.split('.')[1])); } catch { return null; }
 };
 
 const API_URL = 'http://localhost:5174/api/Accounts';
@@ -29,25 +22,19 @@ const ProfileEditing: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const [newPhoto, setNewPhoto] = useState<File | null>(null);
+    const [deletePhoto, setDeletePhoto] = useState(false); // прапор: видалити фото на сервері
 
     const [form, setForm] = useState({
-        firstName: '',
-        lastName: '',
-        middleName: '',
-        userName: '',
-        email: '',
-        phoneNumber: '',
-        city: '',
-        description: '',
+        firstName: '', lastName: '', middleName: '',
+        userName: '', email: '', phoneNumber: '', city: '', description: '',
     });
 
-    const [passwords, setPasswords] = useState({
-        newPassword: '',
-        confirmPassword: '',
-    });
+    const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
 
     useEffect(() => {
         if (!token) return;
@@ -56,28 +43,16 @@ const ProfileEditing: React.FC = () => {
         if (!id) return;
         setUserId(id);
 
-        const fetchUser = async () => {
-            try {
-                const res = await axios.get(`${API_URL}/GetUserById/${id}`);
-                const d = res.data;
-                setForm({
-                    firstName:   d.firstName   || '',
-                    lastName:    d.lastName    || '',
-                    middleName:  d.middleName  || '',
-                    userName:    d.userName    || '',
-                    email:       d.email       || '',
-                    phoneNumber: d.phoneNumber || '',
-                    city:        d.city        || '',
-                    description: d.description || '',
-                });
-                if (d.photo) {
-                    setPhotoPreview(`http://localhost:5174/images/1200_${d.photo}`);
-                }
-            } catch (e) {
-                console.error('Error fetching user:', e);
-            }
-        };
-        fetchUser();
+        axios.get(`${API_URL}/GetUserById/${id}`).then(res => {
+            const d = res.data;
+            setForm({
+                firstName: d.firstName || '', lastName: d.lastName || '',
+                middleName: d.middleName || '', userName: d.userName || '',
+                email: d.email || '', phoneNumber: d.phoneNumber || '',
+                city: d.city || '', description: d.description || '',
+            });
+            if (d.photo) setPhotoPreview(`http://localhost:5174/images/1200_${d.photo}`);
+        }).catch(e => console.error('Error fetching user:', e));
     }, [token]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -87,6 +62,7 @@ const ProfileEditing: React.FC = () => {
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         setNewPhoto(file);
+        setDeletePhoto(false);
         if (file) {
             const reader = new FileReader();
             reader.onload = () => setPhotoPreview(reader.result as string);
@@ -94,9 +70,11 @@ const ProfileEditing: React.FC = () => {
         }
     };
 
+    // Видалення фото — очищаємо локально і ставимо прапор
     const handleDeletePhoto = () => {
         setNewPhoto(null);
         setPhotoPreview(null);
+        setDeletePhoto(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -105,12 +83,10 @@ const ProfileEditing: React.FC = () => {
 
         if (passwords.newPassword || passwords.confirmPassword) {
             if (passwords.newPassword !== passwords.confirmPassword) {
-                setError('Нові паролі не співпадають');
-                return;
+                setError('Нові паролі не співпадають'); return;
             }
             if (passwords.newPassword.length < 6) {
-                setError('Пароль має бути не менше 6 символів');
-                return;
+                setError('Пароль має бути не менше 6 символів'); return;
             }
         }
 
@@ -127,6 +103,7 @@ const ProfileEditing: React.FC = () => {
             formData.append('City',        form.city);
             formData.append('Description', form.description);
             if (newPhoto) formData.append('Photo', newPhoto);
+            if (deletePhoto) formData.append('DeletePhoto', 'true');
 
             await axios.post(
                 `${API_URL}/UpdateProfile/update-profile/${userId}`,
@@ -138,27 +115,37 @@ const ProfileEditing: React.FC = () => {
                 await axios.put(
                     `${API_URL}/UpdatePassword/update-password/${userId}`,
                     { NewPassword: passwords.newPassword },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
+                    { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
                 );
             }
 
             setSuccess(true);
-            setTimeout(() => {
-                setSuccess(false);
-                navigate('/account');
-            }, 1500);
+            setTimeout(() => { setSuccess(false); navigate('/account'); }, 1500);
         } catch (err: any) {
-            const msg = err?.response?.data?.message
-                || err?.response?.data
-                || 'Помилка збереження';
+            const msg = err?.response?.data?.message || err?.response?.data || 'Помилка збереження';
             setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Видалення акаунту повністю
+    const handleDeleteAccount = async () => {
+        if (!token || !userId) return;
+        setDeleteLoading(true);
+        try {
+            await axios.delete(
+                `${API_URL}/DeleteAccount/${userId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            localStorage.removeItem('token');
+            navigate('/');
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || err?.response?.data || 'Помилка видалення акаунту';
+            setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+            setShowDeleteConfirm(false);
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -186,9 +173,11 @@ const ProfileEditing: React.FC = () => {
                             + Завантажити
                             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
                         </label>
-                        <button type="button" className="settings-photo-btn delete" onClick={handleDeletePhoto}>
-                            🗑 Видалити
-                        </button>
+                        {photoPreview && (
+                            <button type="button" className="settings-photo-btn delete" onClick={handleDeletePhoto}>
+                                🗑 Видалити
+                            </button>
+                        )}
                     </div>
                 </section>
 
@@ -218,17 +207,9 @@ const ProfileEditing: React.FC = () => {
                             <input type="text" name="city" value={form.city} onChange={handleChange} />
                         </div>
                     </div>
-
-                    {/* Опис — на всю ширину */}
                     <div className="settings-field settings-field-full" style={{ marginTop: 14 }}>
                         <label>Опис профілю</label>
-                        <textarea
-                            name="description"
-                            value={form.description}
-                            onChange={handleChange}
-                            rows={4}
-                            placeholder="Розкажіть про себе..."
-                        />
+                        <textarea name="description" value={form.description} onChange={handleChange} rows={4} placeholder="Розкажіть про себе..." />
                     </div>
                 </section>
 
@@ -256,19 +237,11 @@ const ProfileEditing: React.FC = () => {
                     <div className="settings-grid">
                         <div className="settings-field">
                             <label>Новий пароль</label>
-                            <input
-                                type="password"
-                                value={passwords.newPassword}
-                                onChange={e => setPasswords(p => ({ ...p, newPassword: e.target.value }))}
-                            />
+                            <input type="password" value={passwords.newPassword} onChange={e => setPasswords(p => ({ ...p, newPassword: e.target.value }))} />
                         </div>
                         <div className="settings-field">
                             <label>Підтвердіть новий пароль</label>
-                            <input
-                                type="password"
-                                value={passwords.confirmPassword}
-                                onChange={e => setPasswords(p => ({ ...p, confirmPassword: e.target.value }))}
-                            />
+                            <input type="password" value={passwords.confirmPassword} onChange={e => setPasswords(p => ({ ...p, confirmPassword: e.target.value }))} />
                         </div>
                     </div>
                 </section>
@@ -281,8 +254,40 @@ const ProfileEditing: React.FC = () => {
                         ✓ {loading ? 'Збереження...' : 'Зберегти зміни'}
                     </button>
                 </div>
-
             </form>
+
+            {/* Небезпечна зона */}
+            <section className="settings-section settings-danger-zone">
+                <h3 className="settings-section-title" style={{ color: '#ef4444' }}>Небезпечна зона</h3>
+                <div className="settings-divider" style={{ borderColor: '#fecaca' }} />
+                <div className="settings-danger-row">
+                    <div>
+                        <p className="settings-danger-title">Видалити акаунт</p>
+                        <p className="settings-danger-desc">Це незворотня дія. Всі ваші оголошення будуть видалені.</p>
+                    </div>
+                    <button type="button" className="settings-delete-account-btn" onClick={() => setShowDeleteConfirm(true)}>
+                        Видалити акаунт
+                    </button>
+                </div>
+            </section>
+
+            {/* Модал підтвердження */}
+            {showDeleteConfirm && (
+                <div className="settings-confirm-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="settings-confirm-modal" onClick={e => e.stopPropagation()}>
+                        <h3>Ви впевнені?</h3>
+                        <p>Акаунт та всі оголошення будуть <strong>назавжди</strong> видалені. Це дію неможливо скасувати.</p>
+                        <div className="settings-confirm-btns">
+                            <button className="settings-confirm-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                                Скасувати
+                            </button>
+                            <button className="settings-confirm-delete" onClick={handleDeleteAccount} disabled={deleteLoading}>
+                                {deleteLoading ? 'Видалення...' : 'Так, видалити'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
