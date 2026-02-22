@@ -10,6 +10,7 @@ import EditAccountPage from './pages/EditAccountPage/EditAccountPage';
 import PostAdPage from './pages/PostAdPage/PostAdPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellerPage from './pages/SellerPage/SellerPage';
+import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 
 const App: React.FC = () => {
     return (
@@ -26,7 +27,7 @@ const App: React.FC = () => {
                 <Route path="/account" element={<AccountPage />}>
                     <Route index                element={<div>Статистика (coming soon)</div>} />
                     <Route path="edit"          element={<EditAccountPage />} />
-                    <Route path="ads"           element={<div>Мої оголошення</div>} />
+                    <Route path="ads"           element={<MyAds />} />
                     <Route path="messages"      element={<div>Повідомлення</div>} />
                     <Route path="favorites"     element={<div>Улюблене</div>} />
                     <Route path="notifications" element={<div>Сповіщення</div>} />

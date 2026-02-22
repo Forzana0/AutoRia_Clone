@@ -1,101 +1,126 @@
-// MyAds.tsx
-
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux"; // Імпортуємо useSelector
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './MyAds.css';
-import CarCard from "../../../../components/carCard/CarCard";
-import {Car} from "../../../../interfaces/Car"; // Інтерфейс Car для типізації
 import { RootState } from '../../../../redux/store';
-import { decodeJwt } from "jose";
-import axios from "axios";
 
-interface DecodedToken {
-    firstName?: string;
-    lastName?: string;
-    id?: string;
-    location?: string;
-    rating?: number;
-    photo?: string;
+const API = 'http://localhost:5174';
+
+interface CarItem {
+    id: number;
+    carBrand?: { name: string };
+    carModel?: { name: string };
+    year?: number;
+    city?: { name: string };
+    price?: number;
+    photos?: { name: string }[];
 }
 
+const decodeToken = (token: string) => {
+    try { return JSON.parse(atob(token.split('.')[1])); } catch { return null; }
+};
+
 const MyAds: React.FC = () => {
-    const [cars, setCars] = useState<Car[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const navigate = useNavigate();
+    const tokenFromRedux = useSelector((state: RootState) => state.auth.token);
+    const token = tokenFromRedux || localStorage.getItem('token');
+    const userId = token ? decodeToken(token)?.id : null;
 
+    const [cars, setCars] = useState<CarItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    let profileData = {
-        name: 'Невідомий користувач',
-        id: '1',
-        location: 'Місце не вказано',
-        rating: 0,
-        imageUrl: ['/images/default.png'],
+    const fetchCars = async () => {
+        if (!userId) return;
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API}/api/Car/user/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setCars(res.data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const token = useSelector((state: RootState) => state.auth.token);
+    useEffect(() => { fetchCars(); }, [userId]);
 
-    if (token) {
-        const decodedToken = decodeJwt(token) as DecodedToken;
-
-        profileData = {
-            name: decodedToken?.firstName ? `${decodedToken.firstName} ${decodedToken.lastName}` : 'Невідомий користувач',
-            id: decodedToken?.id || '1',
-            location: decodedToken?.location || 'Місце не вказано',
-            rating: decodedToken?.rating || 0,
-            imageUrl: decodedToken?.photo ? [decodedToken.photo] : ['/images/default.png'],
-        };
-    }
-
-    const userId = profileData.id;
-
-    useEffect(() => {
-        const fetchCars = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(`http://localhost:5174/api/Car/user/${userId}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                });
-
-                //console.log("Response status:", response.status);
-                //console.log("Response body:", response.data);
-
-                if (response.status !== 200) {
-                    throw new Error(`Error fetching cars: ${response.status}`);
-                }
-
-                setCars(response.data);
-            } catch (err) {
-                console.error("Error:", err);
-
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (userId) {
-            fetchCars();
+    const handleDelete = async (carId: number) => {
+        if (!window.confirm('Видалити це оголошення?')) return;
+        setDeletingId(carId);
+        try {
+            await axios.delete(`${API}/api/Car/${carId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setCars(prev => prev.filter(c => c.id !== carId));
+        } catch (e) {
+            alert('Помилка при видаленні. Спробуйте ще раз.');
+            console.error(e);
+        } finally {
+            setDeletingId(null);
         }
-    }, [userId]);
-
-
-    if (loading) {
-        return <p>Loading...</p>;
-    }
-
+    };
 
     return (
-        <div className="my-ads-container">
-            <div className="cars-grid">
-                {cars.length === 0 ? (
-                    <p>No cars found.</p>
-                ) : (
-                    cars.map((car: Car, index: number) => (
-                        <CarCard key={index} {...car} /> // Передаємо всі властивості car
-                    ))
-                )}
-            </div>
+        <div className="my-ads-wrapper">
+            {loading ? (
+                <p className="my-ads-loading">Завантаження...</p>
+            ) : cars.length === 0 ? (
+                <div className="my-ads-empty">
+                    <p>На жаль у вас більше немає оголошень!</p>
+                    <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
+                        + Додати оголошення
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <div className="my-ads-list">
+                        {cars.map(car => {
+                            const title = `${car.carBrand?.name || ''} ${car.carModel?.name || ''} ${car.year || ''}`.trim();
+                            const img = car.photos?.[0]?.name
+                                ? `${API}/images/400_${car.photos[0].name}`
+                                : null;
+
+                            return (
+                                <div key={car.id} className="my-ad-card" onClick={() => navigate(`/product/${car.id}`)}>
+                                    <div className="my-ad-img">
+                                        {img
+                                            ? <img src={img} alt={title} />
+                                            : <div className="my-ad-no-img">📷</div>
+                                        }
+                                    </div>
+                                    <div className="my-ad-info">
+                                        <span className="my-ad-title">{title}</span>
+                                        {car.city?.name && (
+                                            <span className="my-ad-city">📍 {car.city.name}</span>
+                                        )}
+                                    </div>
+                                    <div className="my-ad-right" onClick={e => e.stopPropagation()}>
+                                        <span className="my-ad-price">
+                                            {car.price ? `${car.price.toLocaleString()} $` : '—'}
+                                        </span>
+                                        <button
+                                            className="my-ad-delete-btn"
+                                            onClick={() => handleDelete(car.id)}
+                                            disabled={deletingId === car.id}
+                                        >
+                                            {deletingId === car.id ? '...' : 'Видалити'}
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="my-ads-footer">
+                        <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
+                            + Додати оголошення
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
