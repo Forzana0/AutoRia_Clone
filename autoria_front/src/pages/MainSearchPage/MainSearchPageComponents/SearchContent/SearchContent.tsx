@@ -95,9 +95,11 @@ const SearchContent: React.FC = () => {
         const loadCars = async () => {
             setLoading(true);
             try {
-                if (location.state?.cars && location.state.cars.length > 0) {
-                    setAllCars(location.state.cars);
+                // Якщо прийшли з пошуку (є state) — показуємо результати пошуку (навіть якщо порожні)
+                if (location.state?.cars !== undefined) {
+                    setAllCars(location.state.cars || []);
                 } else {
+                    // Якщо зайшли напряму на /search без пошуку — завантажуємо всі авто
                     const res = await axios.get(`${API}/api/Car`);
                     setAllCars(res.data || []);
                 }

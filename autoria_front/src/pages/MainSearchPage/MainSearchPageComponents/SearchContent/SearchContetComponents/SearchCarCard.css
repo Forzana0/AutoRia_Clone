@@ -1,17 +1,18 @@
 .scc-card {
     background: #fff;
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
     transition: box-shadow 0.18s, transform 0.18s;
-    border: 1.5px solid #f0f0f0;
+    border: 1px solid #e5e7eb;
     font-family: 'Manrope', sans-serif;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .scc-card:hover {
-    box-shadow: 0 6px 24px rgba(0,0,0,0.11);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     transform: translateY(-2px);
 }
 
@@ -27,11 +28,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
     transition: transform 0.3s;
 }
 
 .scc-card:hover .scc-img img {
-    transform: scale(1.03);
+    transform: scale(1.04);
 }
 
 .scc-no-img {
@@ -45,15 +47,14 @@
 }
 
 .scc-body {
-    padding: 14px 16px 16px;
+    padding: 12px 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    flex: 1;
+    gap: 5px;
 }
 
 .scc-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #1a1d23;
     margin: 0;
@@ -70,23 +71,23 @@
 .scc-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
     margin: 2px 0;
 }
 
 .scc-tag {
     background: #f3f4f6;
     border-radius: 6px;
-    padding: 3px 9px;
+    padding: 2px 8px;
     font-size: 11px;
     font-weight: 600;
     color: #4b5563;
+    border: 1px solid #e5e7eb;
 }
 
 .scc-price {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
     color: #1a1d23;
-    margin-top: auto;
-    padding-top: 6px;
+    margin-top: 4px;
 }

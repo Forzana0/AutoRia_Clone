@@ -11,6 +11,7 @@ import PostAdPage from './pages/PostAdPage/PostAdPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
+import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
 const App: React.FC = () => {
     return (
@@ -18,6 +19,7 @@ const App: React.FC = () => {
             <Navbar />
             <Routes>
                 <Route path="/"                element={<MainSearchPage />} />
+                <Route path="/search"          element={<SearchContent />} />
                 <Route path="/auth"            element={<AuthPage />} />
                 <Route path="/post-ad"         element={<PostAdPage />} />
                 <Route path="/product/:id"     element={<ProductPage />} />

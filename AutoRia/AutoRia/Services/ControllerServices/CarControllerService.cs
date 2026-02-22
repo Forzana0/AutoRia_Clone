@@ -123,30 +123,26 @@ namespace AutoRia.Services.ControllerServices
 
         public async Task<IEnumerable<CarVm>> SearchAsync(CarSearchRequest searchRequest)
         {
-            IQueryable<CarEntity> query = _carContext.Cars;
+            IQueryable<CarEntity> query = _carContext.Cars.AsQueryable();
 
-            // Фільтрація за брендом
             if (!string.IsNullOrWhiteSpace(searchRequest.SelectedBrand) &&
                 searchRequest.SelectedBrand != "Будь-який")
             {
-                query = query.Where(c => c.CarBrand.Name == searchRequest.SelectedBrand);
+                query = query.Where(c => c.CarBrand != null && c.CarBrand.Name == searchRequest.SelectedBrand);
             }
 
-            // Фільтрація за моделлю
             if (!string.IsNullOrWhiteSpace(searchRequest.SelectedModel) &&
                 searchRequest.SelectedModel != "Будь-який")
             {
-                query = query.Where(c => c.CarModel.Name == searchRequest.SelectedModel);
+                query = query.Where(c => c.CarModel != null && c.CarModel.Name == searchRequest.SelectedModel);
             }
 
-            // Фільтрація за типом транспорту
             if (!string.IsNullOrWhiteSpace(searchRequest.CarType) &&
                 searchRequest.CarType != "Будь-який")
             {
-                query = query.Where(c => c.TransportType.Name == searchRequest.CarType);
+                query = query.Where(c => c.TransportType != null && c.TransportType.Name == searchRequest.CarType);
             }
 
-            // Фільтрація за роком
             if (!string.IsNullOrWhiteSpace(searchRequest.Year) &&
                 searchRequest.Year != "Будь-який" &&
                 int.TryParse(searchRequest.Year, out int year))
@@ -154,16 +150,14 @@ namespace AutoRia.Services.ControllerServices
                 query = query.Where(c => c.Year == year);
             }
 
-            // Фільтрація за регіоном / містом
             if (!string.IsNullOrWhiteSpace(searchRequest.Region) &&
                 searchRequest.Region != "Будь-який")
             {
                 query = query.Where(c =>
-                    c.City.Name == searchRequest.Region ||
-                    c.City.Region.Name == searchRequest.Region);
+                    (c.City != null && c.City.Name == searchRequest.Region) ||
+                    (c.City != null && c.City.Region != null && c.City.Region.Name == searchRequest.Region));
             }
 
-            // Фільтрація за станом (Новий / Вживаний)
             if (!string.IsNullOrWhiteSpace(searchRequest.SearchType) &&
                 searchRequest.SearchType != "Будь-який" &&
                 searchRequest.SearchType != "Всі")
@@ -171,7 +165,6 @@ namespace AutoRia.Services.ControllerServices
                 query = query.Where(c => c.Stage == searchRequest.SearchType);
             }
 
-            // Фільтрація за ціною — формат "5000-20000"
             if (!string.IsNullOrWhiteSpace(searchRequest.Price) &&
                 searchRequest.Price != "Будь-який")
             {
@@ -186,11 +179,13 @@ namespace AutoRia.Services.ControllerServices
                 }
             }
 
-            // Фільтрація за VIN
             if (searchRequest.VinChecked)
             {
                 query = query.Where(c => !string.IsNullOrEmpty(c.VIN));
             }
+
+            // Debug — виведи в консоль що фільтрується
+            Console.WriteLine($"[Search] Brand={searchRequest.SelectedBrand}, SearchType={searchRequest.SearchType}, Year={searchRequest.Year}, Region={searchRequest.Region}");
 
             return await query
                 .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
