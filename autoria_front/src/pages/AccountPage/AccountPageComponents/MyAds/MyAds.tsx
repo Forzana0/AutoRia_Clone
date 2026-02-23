@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MyAds.css';
 import { RootState } from '../../../../redux/store';
+import EditAdModal from './EditAdModal';
 
 const API = 'http://localhost:5174';
 
@@ -30,6 +31,7 @@ const MyAds: React.FC = () => {
     const [cars, setCars] = useState<CarItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [editingCarId, setEditingCarId] = useState<number | null>(null);
 
     const fetchCars = async () => {
         if (!userId) return;
@@ -65,63 +67,83 @@ const MyAds: React.FC = () => {
     };
 
     return (
-        <div className="my-ads-wrapper">
-            {loading ? (
-                <p className="my-ads-loading">Завантаження...</p>
-            ) : cars.length === 0 ? (
-                <div className="my-ads-empty">
-                    <p>На жаль у вас більше немає оголошень!</p>
-                    <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
-                        + Додати оголошення
-                    </button>
-                </div>
-            ) : (
-                <>
-                    <div className="my-ads-list">
-                        {cars.map(car => {
-                            const title = `${car.carBrand?.name || ''} ${car.carModel?.name || ''} ${car.year || ''}`.trim();
-                            const img = car.photos?.[0]?.name
-                                ? `${API}/images/400_${car.photos[0].name}`
-                                : null;
-
-                            return (
-                                <div key={car.id} className="my-ad-card" onClick={() => navigate(`/product/${car.id}`)}>
-                                    <div className="my-ad-img">
-                                        {img
-                                            ? <img src={img} alt={title} />
-                                            : <div className="my-ad-no-img">📷</div>
-                                        }
-                                    </div>
-                                    <div className="my-ad-info">
-                                        <span className="my-ad-title">{title}</span>
-                                        {car.city?.name && (
-                                            <span className="my-ad-city">📍 {car.city.name}</span>
-                                        )}
-                                    </div>
-                                    <div className="my-ad-right" onClick={e => e.stopPropagation()}>
-                                        <span className="my-ad-price">
-                                            {car.price ? `${car.price.toLocaleString()} $` : '—'}
-                                        </span>
-                                        <button
-                                            className="my-ad-delete-btn"
-                                            onClick={() => handleDelete(car.id)}
-                                            disabled={deletingId === car.id}
-                                        >
-                                            {deletingId === car.id ? '...' : 'Видалити'}
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="my-ads-footer">
+        <>
+            <div className="my-ads-wrapper">
+                {loading ? (
+                    <p className="my-ads-loading">Завантаження...</p>
+                ) : cars.length === 0 ? (
+                    <div className="my-ads-empty">
+                        <p>На жаль у вас більше немає оголошень!</p>
                         <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
                             + Додати оголошення
                         </button>
                     </div>
-                </>
+                ) : (
+                    <>
+                        <div className="my-ads-list">
+                            {cars.map(car => {
+                                const title = `${car.carBrand?.name || ''} ${car.carModel?.name || ''} ${car.year || ''}`.trim();
+                                const img = car.photos?.[0]?.name
+                                    ? `${API}/images/400_${car.photos[0].name}`
+                                    : null;
+
+                                return (
+                                    <div key={car.id} className="my-ad-card" onClick={() => navigate(`/product/${car.id}`)}>
+                                        <div className="my-ad-img">
+                                            {img
+                                                ? <img src={img} alt={title} />
+                                                : <div className="my-ad-no-img">📷</div>
+                                            }
+                                        </div>
+                                        <div className="my-ad-info">
+                                            <span className="my-ad-title">{title}</span>
+                                            {car.city?.name && (
+                                                <span className="my-ad-city">📍 {car.city.name}</span>
+                                            )}
+                                        </div>
+                                        <div className="my-ad-right" onClick={e => e.stopPropagation()}>
+                                            <span className="my-ad-price">
+                                                {car.price ? `${car.price.toLocaleString()} $` : '—'}
+                                            </span>
+                                            <div className="my-ad-actions">
+                                                <button
+                                                    className="my-ad-edit-btn"
+                                                    onClick={() => setEditingCarId(car.id)}
+                                                    title="Редагувати оголошення"
+                                                >
+                                                    ✏️ Редагувати
+                                                </button>
+                                                <button
+                                                    className="my-ad-delete-btn"
+                                                    onClick={() => handleDelete(car.id)}
+                                                    disabled={deletingId === car.id}
+                                                >
+                                                    {deletingId === car.id ? '...' : 'Видалити'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="my-ads-footer">
+                            <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
+                                + Додати оголошення
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {editingCarId !== null && token && (
+                <EditAdModal
+                    carId={editingCarId}
+                    token={token}
+                    onClose={() => setEditingCarId(null)}
+                    onSaved={fetchCars}
+                />
             )}
-        </div>
+        </>
     );
 };
 

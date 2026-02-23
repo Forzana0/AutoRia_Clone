@@ -2,24 +2,12 @@
 using AutoMapper.QueryableExtensions;
 using AutoRia.ViewModels.Account;
 using AutoRia.ViewModels.Car;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoRia.Data;
-using AutoRia.Data.Entities;
 using AutoRia.SearchReauestClasses;
 using AutoRia.Services.ControllerServices.Interfaces;
-using AutoRia.Services.Interfaces;
 using AutoRia.ViewModels;
-using AutoRia.ViewModels.BodyType;
-using AutoRia.ViewModels.Brand;
-using AutoRia.ViewModels.EngineVolume;
-using AutoRia.ViewModels.Model;
-using AutoRia.ViewModels.NumberOfSeats;
-using AutoRia.ViewModels.Region_City;
-using AutoRia.ViewModels.TransmissionType;
-using AutoRia.ViewModels.TransportType;
-
 
 namespace WebBack.Controllers
 {
@@ -29,18 +17,15 @@ namespace WebBack.Controllers
     {
         private readonly IMapper _mapper;
         private readonly CarDbContext _context;
-        //private readonly IValidator<CarCreateVm> _createValidator;
         private readonly ICarControllerService _service;
 
         public CarController(
             IMapper mapper,
             CarDbContext context,
-            //IValidator<CarCreateVm> createValidator,
             ICarControllerService service)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            //_createValidator = createValidator ?? throw new ArgumentNullException(nameof(createValidator));
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
@@ -49,14 +34,11 @@ namespace WebBack.Controllers
         public async Task<IActionResult> SearchCars([FromBody] CarSearchRequest searchRequest)
         {
             if (searchRequest == null)
-            {
                 return BadRequest("Invalid search request.");
-            }
 
             try
             {
-                // Ваш код для пошуку автомобілів за заданими параметрами
-                var cars = await _service.SearchAsync(searchRequest); // Ви повинні реалізувати метод SearchAsync у вашому сервісі
+                var cars = await _service.SearchAsync(searchRequest);
                 return Ok(cars);
             }
             catch (Exception ex)
@@ -64,7 +46,6 @@ namespace WebBack.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
 
         // GET: api/Car
         [HttpGet]
@@ -80,61 +61,58 @@ namespace WebBack.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CarVm>> GetCar(int id)
         {
-            var carUser = await _context.UserCars.Where(uc => uc.CarId == id).FirstOrDefaultAsync();
+            var carUser = await _context.UserCars
+                .Where(uc => uc.CarId == id)
+                .FirstOrDefaultAsync();
 
             var car = await _context.Cars
                 .Where(c => c.Id == id)
-                .ProjectTo<CarVm>(_mapper.ConfigurationProvider) // Project to CarVm using AutoMapper
+                .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
-            car.user = _context.Users
-                .Where(u => u.Id == carUser.UserId)
-                .ProjectTo<ProfileVm>(_mapper.ConfigurationProvider).FirstOrDefault();
 
             if (car == null)
-            {
                 return NotFound();
+
+            if (carUser != null)
+            {
+                car.user = _context.Users
+                    .Where(u => u.Id == carUser.UserId)
+                    .ProjectTo<ProfileVm>(_mapper.ConfigurationProvider)
+                    .FirstOrDefault();
             }
 
-            // Map the car entity to a CarVm using AutoMapper
-            var carVm = _mapper.Map<CarVm>(car);
-
-            // Return the CarVm
             return Ok(car);
         }
 
-        // POST: api/Car
+        // POST: api/Car/add
         [HttpPost("add")]
         public async Task<IActionResult> Create([FromForm] CarCreateVm vm)
         {
-
             try
             {
-                // Call the service to create the car
                 await _service.CreateAsync(vm);
-                return Ok(new { message = "Car created successfully." }); // Return a success message
+                return Ok(new { message = "Car created successfully." });
             }
             catch (Exception ex)
             {
-                // Log the exception (optional)
-                // _logger.LogError(ex, "An error occurred while creating the car.");
-
                 return StatusCode(500, new { error = "An error occurred while creating the car.", details = ex.Message });
             }
         }
 
-
         // PUT: api/Car/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromForm] CarEditVm vm)
+        public async Task<IActionResult> Update(int id, [FromForm] CarEditVm vm)
         {
+            vm.Id = id; // прив'язуємо id з URL до моделі
+
             try
             {
                 await _service.UpdateAsync(vm);
-                return Ok();
+                return Ok(new { message = "Car updated successfully." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -144,9 +122,7 @@ namespace WebBack.Controllers
         {
             var car = await _context.Cars.FindAsync(id);
             if (car == null)
-            {
                 return NotFound();
-            }
 
             _context.Cars.Remove(car);
             await _context.SaveChangesAsync();
@@ -154,40 +130,30 @@ namespace WebBack.Controllers
             return NoContent();
         }
 
-        private bool CarExists(int id)
-        {
-            return _context.Cars.Any(e => e.Id == id);
-        }
-
-        // GET: api/cars/user/{userId}
+        // GET: api/Car/user/{userId}
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<CarVm>>> GetCarsByUserId(int userId)
         {
-
-
-
-
-            // Check if the user exists
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
-            {
                 return NotFound($"User with ID {userId} not found.");
-            }
 
-
-            var userCars = await _context.UserCars
+            var userCarIds = await _context.UserCars
                 .Where(uc => uc.UserId == userId)
-                .Select(uc => uc.CarId) // вибираємо тільки CarId
+                .Select(uc => uc.CarId)
                 .ToListAsync();
 
             var cars = await _context.Cars
-                .Where(c => userCars.Contains(c.Id)) // відбираємо машини, де Id входить у список
-                .ProjectTo<CarVm>(_mapper.ConfigurationProvider) // проекція у CarVm
+                .Where(c => userCarIds.Contains(c.Id))
+                .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .ToArrayAsync();
-
 
             return Ok(cars);
         }
 
+        private bool CarExists(int id)
+        {
+            return _context.Cars.Any(e => e.Id == id);
+        }
     }
 }

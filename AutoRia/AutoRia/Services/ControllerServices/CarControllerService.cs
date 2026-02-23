@@ -109,13 +109,100 @@ namespace AutoRia.Services.ControllerServices
         public async Task UpdateAsync(CarEditVm vm)
         {
             var car = await _carContext.Cars
-                .Include(x => x.Photos)
+                .Include(c => c.Photos)
                 .FirstOrDefaultAsync(c => c.Id == vm.Id);
 
             if (car == null)
                 throw new Exception("Car not found");
 
-            _mapper.Map(vm, car);
+            // ── Основні поля ──────────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(vm.Stage))
+                car.Stage = vm.Stage;
+
+            if (!string.IsNullOrWhiteSpace(vm.Description))
+                car.Description = vm.Description;
+
+            if (!string.IsNullOrWhiteSpace(vm.Vin))
+                car.VIN = vm.Vin;
+
+            if (vm.Year > 0)
+                car.Year = vm.Year;
+
+            if (vm.Mileage > 0)
+                car.Mileage = vm.Mileage;
+
+            if (vm.Price > 0)
+                car.Price = vm.Price;
+
+            // ── Зв'язані сутності ─────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(vm.CarBrand))
+                car.CarBrand = await _carContext.Brands
+                    .FirstOrDefaultAsync(b => b.Name == vm.CarBrand);
+
+            if (!string.IsNullOrWhiteSpace(vm.CarModel))
+                car.CarModel = await _carContext.Models
+                    .FirstOrDefaultAsync(m => m.Name == vm.CarModel);
+
+            if (!string.IsNullOrWhiteSpace(vm.BodyType))
+                car.BodyType = await _carContext.BodyTypes
+                    .FirstOrDefaultAsync(bt => bt.Name == vm.BodyType);
+
+            if (!string.IsNullOrWhiteSpace(vm.TransportType))
+                car.TransportType = await _carContext.TransportTypes
+                    .FirstOrDefaultAsync(tt => tt.Name == vm.TransportType);
+
+            if (!string.IsNullOrWhiteSpace(vm.TransmissionType))
+                car.TransmissionType = await _carContext.TransmissionTypes
+                    .FirstOrDefaultAsync(tt => tt.Name == vm.TransmissionType);
+
+            if (!string.IsNullOrWhiteSpace(vm.FuelTypes))
+                car.FuelTypes = await _carContext.FuelTypes
+                    .FirstOrDefaultAsync(ft => ft.Name == vm.FuelTypes);
+
+            if (!string.IsNullOrWhiteSpace(vm.City))
+                car.City = await _carContext.Cities
+                    .FirstOrDefaultAsync(c => c.Name == vm.City);
+
+            if (!string.IsNullOrWhiteSpace(vm.EngineVolume) &&
+                float.TryParse(vm.EngineVolume, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out float engVol))
+            {
+                car.EngineVolume = await _carContext.EngineVolumes
+                    .FirstOrDefaultAsync(ev => ev.Volume == engVol);
+            }
+
+            // ── Видалення зазначених фото ─────────────────────────────
+            if (vm.DeletedPhotos != null && vm.DeletedPhotos.Any())
+            {
+                var toDelete = car.Photos
+                    .Where(p => vm.DeletedPhotos.Contains(p.Name))
+                    .ToList();
+
+                foreach (var photo in toDelete)
+                {
+                    _imageService.DeleteImageIfExists(photo.Name);
+                    car.Photos.Remove(photo);
+                    _carContext.CarPhotos.Remove(photo);
+                }
+            }
+
+            // ── Додавання нових фото ───────────────────────────────────
+            if (vm.Photos != null && vm.Photos.Any())
+            {
+                var maxPriority = car.Photos.Any()
+                    ? car.Photos.Max(p => p.Priority)
+                    : 0;
+
+                foreach (var photo in vm.Photos)
+                {
+                    maxPriority++;
+                    car.Photos.Add(new CarPhotoEntity
+                    {
+                        Name = await _imageService.SaveImageAsync(photo),
+                        Priority = maxPriority
+                    });
+                }
+            }
 
             _carContext.Cars.Update(car);
             await _carContext.SaveChangesAsync();
