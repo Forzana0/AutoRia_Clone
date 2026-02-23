@@ -21,8 +21,7 @@ namespace AutoRia.Services.ControllerServices
         public CarControllerService(
             CarDbContext carContext,
             IMapper mapper,
-            IImageService imageService
-        )
+            IImageService imageService)
         {
             _carContext = carContext ?? throw new ArgumentNullException(nameof(carContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -32,15 +31,12 @@ namespace AutoRia.Services.ControllerServices
         public async Task CreateAsync(CarCreateVm vm)
         {
             var car = new CarEntity();
-
             car.DateCreated = DateTime.UtcNow;
-
             int priorityIndex = 1;
 
             if (vm.Photos != null && vm.Photos.Any())
             {
                 car.Photos = new List<CarPhotoEntity>();
-
                 foreach (var photo in vm.Photos)
                 {
                     car.Photos.Add(new CarPhotoEntity
@@ -51,13 +47,12 @@ namespace AutoRia.Services.ControllerServices
                     priorityIndex++;
                 }
             }
+
             car.BodyType = await _carContext.BodyTypes.Where(bt => bt.Name == vm.BodyType).FirstOrDefaultAsync();
             car.CarModel = await _carContext.Models.Where(m => m.Name == vm.CarModel).FirstOrDefaultAsync();
             car.CarBrand = await _carContext.Brands.Where(b => b.Name == vm.CarBrand).FirstOrDefaultAsync();
-
             car.City = await _carContext.Cities.Where(c => c.Name == vm.City).FirstOrDefaultAsync();
             car.Color = await _carContext.Colors.Where(cl => cl.Color == vm.Color).FirstOrDefaultAsync();
-
             car.Description = vm.Description;
             car.EngineVolume = await _carContext.EngineVolumes.Where(ev => ev.Volume == float.Parse(vm.EngineVolume)).FirstOrDefaultAsync();
             car.FuelTypes = await _carContext.FuelTypes.Where(ft => ft.Name == vm.FuelTypes).FirstOrDefaultAsync();
@@ -66,9 +61,6 @@ namespace AutoRia.Services.ControllerServices
             car.TransportType = await _carContext.TransportTypes.Where(tt => tt.Name == vm.TransportType).FirstOrDefaultAsync();
             car.VIN = vm.Vin;
             car.TransmissionType = await _carContext.TransmissionTypes.Where(tt => tt.Name == vm.TransmissionType).FirstOrDefaultAsync();
-
-
-            // Assigning boolean properties and price
             car.HasAirConditioning = vm.HasAirConditioning;
             car.HasHeadlights = vm.HasHeadlights;
             car.HasHeatedSeats = vm.HasHeatedSeats;
@@ -85,24 +77,23 @@ namespace AutoRia.Services.ControllerServices
             car.IsInstallmentAvailable = vm.IsInstallmentAvailable;
             car.IsNotCustomsCleared = vm.IsNotCustomsCleared;
             car.Metallic = vm.Metallic;
-            car.Price = vm.Price; // Assigning price
+            car.Price = vm.Price;
             car.Year = vm.Year;
             car.Mileage = vm.Mileage;
 
             try
             {
-                // Додаємо автомобіль в таблицю Cars і зберігаємо зміни, щоб отримати згенерований CarId
                 await _carContext.Cars.AddAsync(car);
-                await _carContext.SaveChangesAsync(); // Зберігаємо, щоб Id було згенеровано
-                // Створюємо запис для таблиці UserCars
+                await _carContext.SaveChangesAsync();
+
                 var userCar = new UserCarEntity
                 {
                     User = await _carContext.Users.Where(u => u.Id == int.Parse(vm.UserId)).FirstOrDefaultAsync(),
-                    UserId = int.Parse(vm.UserId), // Id користувача
+                    UserId = int.Parse(vm.UserId),
                     Car = car,
-                    CarId = car.Id // Використовуємо згенерований Id автомобіля
+                    CarId = car.Id
                 };
-                // Додаємо запис в таблицю UserCars
+
                 if (userCar != null)
                 {
                     await _carContext.UserCars.AddAsync(userCar);
@@ -111,7 +102,6 @@ namespace AutoRia.Services.ControllerServices
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it accordingly
                 throw new Exception("Error creating car: " + ex.Message);
             }
         }
@@ -119,20 +109,99 @@ namespace AutoRia.Services.ControllerServices
         public async Task UpdateAsync(CarEditVm vm)
         {
             var car = await _carContext.Cars
-                .Include(x => x.Photos)
+                .Include(c => c.Photos)
                 .FirstOrDefaultAsync(c => c.Id == vm.Id);
 
             if (car == null)
-            {
                 throw new Exception("Car not found");
+
+            // ── Основні поля ──────────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(vm.Stage))
+                car.Stage = vm.Stage;
+
+            if (!string.IsNullOrWhiteSpace(vm.Description))
+                car.Description = vm.Description;
+
+            if (!string.IsNullOrWhiteSpace(vm.Vin))
+                car.VIN = vm.Vin;
+
+            if (vm.Year > 0)
+                car.Year = vm.Year;
+
+            if (vm.Mileage > 0)
+                car.Mileage = vm.Mileage;
+
+            if (vm.Price > 0)
+                car.Price = vm.Price;
+
+            // ── Зв'язані сутності ─────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(vm.CarBrand))
+                car.CarBrand = await _carContext.Brands
+                    .FirstOrDefaultAsync(b => b.Name == vm.CarBrand);
+
+            if (!string.IsNullOrWhiteSpace(vm.CarModel))
+                car.CarModel = await _carContext.Models
+                    .FirstOrDefaultAsync(m => m.Name == vm.CarModel);
+
+            if (!string.IsNullOrWhiteSpace(vm.BodyType))
+                car.BodyType = await _carContext.BodyTypes
+                    .FirstOrDefaultAsync(bt => bt.Name == vm.BodyType);
+
+            if (!string.IsNullOrWhiteSpace(vm.TransportType))
+                car.TransportType = await _carContext.TransportTypes
+                    .FirstOrDefaultAsync(tt => tt.Name == vm.TransportType);
+
+            if (!string.IsNullOrWhiteSpace(vm.TransmissionType))
+                car.TransmissionType = await _carContext.TransmissionTypes
+                    .FirstOrDefaultAsync(tt => tt.Name == vm.TransmissionType);
+
+            if (!string.IsNullOrWhiteSpace(vm.FuelTypes))
+                car.FuelTypes = await _carContext.FuelTypes
+                    .FirstOrDefaultAsync(ft => ft.Name == vm.FuelTypes);
+
+            if (!string.IsNullOrWhiteSpace(vm.City))
+                car.City = await _carContext.Cities
+                    .FirstOrDefaultAsync(c => c.Name == vm.City);
+
+            if (!string.IsNullOrWhiteSpace(vm.EngineVolume) &&
+                float.TryParse(vm.EngineVolume, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out float engVol))
+            {
+                car.EngineVolume = await _carContext.EngineVolumes
+                    .FirstOrDefaultAsync(ev => ev.Volume == engVol);
             }
 
-            // Update car properties based on vm
-            _mapper.Map(vm, car);
+            // ── Видалення зазначених фото ─────────────────────────────
+            if (vm.DeletedPhotos != null && vm.DeletedPhotos.Any())
+            {
+                var toDelete = car.Photos
+                    .Where(p => vm.DeletedPhotos.Contains(p.Name))
+                    .ToList();
 
+                foreach (var photo in toDelete)
+                {
+                    _imageService.DeleteImageIfExists(photo.Name);
+                    car.Photos.Remove(photo);
+                    _carContext.CarPhotos.Remove(photo);
+                }
+            }
+
+            // ── Додавання нових фото ───────────────────────────────────
             if (vm.Photos != null && vm.Photos.Any())
             {
-                // Handle photo updates (similar to CreateAsync)
+                var maxPriority = car.Photos.Any()
+                    ? car.Photos.Max(p => p.Priority)
+                    : 0;
+
+                foreach (var photo in vm.Photos)
+                {
+                    maxPriority++;
+                    car.Photos.Add(new CarPhotoEntity
+                    {
+                        Name = await _imageService.SaveImageAsync(photo),
+                        Priority = maxPriority
+                    });
+                }
             }
 
             _carContext.Cars.Update(car);
@@ -141,81 +210,73 @@ namespace AutoRia.Services.ControllerServices
 
         public async Task<IEnumerable<CarVm>> SearchAsync(CarSearchRequest searchRequest)
         {
-            // Ініціалізуємо запит для фільтрації
-            IQueryable<CarEntity> query = _carContext.Cars;
+            IQueryable<CarEntity> query = _carContext.Cars.AsQueryable();
 
-            // Фільтрація за брендом
-            if (searchRequest.SelectedBrand != "Будь-який")
+            if (!string.IsNullOrWhiteSpace(searchRequest.SelectedBrand) &&
+                searchRequest.SelectedBrand != "Будь-який")
             {
-                query = query.Where(c => c.CarBrand.Name == searchRequest.SelectedBrand);
+                query = query.Where(c => c.CarBrand != null && c.CarBrand.Name == searchRequest.SelectedBrand);
             }
 
-            // Фільтрація за моделлю
-            if (searchRequest.SelectedModel != "Будь-який")
+            if (!string.IsNullOrWhiteSpace(searchRequest.SelectedModel) &&
+                searchRequest.SelectedModel != "Будь-який")
             {
-                query = query.Where(c => c.CarModel.Name == searchRequest.SelectedModel);
+                query = query.Where(c => c.CarModel != null && c.CarModel.Name == searchRequest.SelectedModel);
             }
 
-            // Фільтрація за типом кузова (BodyType)
-            if (searchRequest.CarType != "Будь-який")
+            if (!string.IsNullOrWhiteSpace(searchRequest.CarType) &&
+                searchRequest.CarType != "Будь-який")
             {
-                query = query.Where(c => c.TransportType.Name == searchRequest.CarType);
+                query = query.Where(c => c.TransportType != null && c.TransportType.Name == searchRequest.CarType);
             }
 
-
-            // Фільтрація за роком
-            if (searchRequest.Year != "Будь-який")
+            if (!string.IsNullOrWhiteSpace(searchRequest.Year) &&
+                searchRequest.Year != "Будь-який" &&
+                int.TryParse(searchRequest.Year, out int year))
             {
-                if (int.TryParse(searchRequest.Year, out int year))
+                query = query.Where(c => c.Year == year);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.Region) &&
+                searchRequest.Region != "Будь-який")
+            {
+                query = query.Where(c =>
+                    (c.City != null && c.City.Name == searchRequest.Region) ||
+                    (c.City != null && c.City.Region != null && c.City.Region.Name == searchRequest.Region));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.SearchType) &&
+                searchRequest.SearchType != "Будь-який" &&
+                searchRequest.SearchType != "Всі")
+            {
+                query = query.Where(c => c.Stage == searchRequest.SearchType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.Price) &&
+                searchRequest.Price != "Будь-який")
+            {
+                var parts = searchRequest.Price.Split('-');
+                if (parts.Length == 2)
                 {
-                    query = query.Where(c => c.Year == year);
+                    if (decimal.TryParse(parts[0], out decimal priceFrom) && priceFrom > 0)
+                        query = query.Where(c => c.Price >= priceFrom);
+
+                    if (decimal.TryParse(parts[1], out decimal priceTo) && priceTo > 0 && priceTo < 999999)
+                        query = query.Where(c => c.Price <= priceTo);
                 }
             }
 
-            // Фільтрація за регіоном
-            if (searchRequest.Region != "Будь-який")
-            {
-                query = query.Where(c => c.City.Region.Name == searchRequest.Region);
-            }
-
-            // Фільтрація за VIN (якщо ввімкнено перевірку VIN)
             if (searchRequest.VinChecked)
             {
                 query = query.Where(c => !string.IsNullOrEmpty(c.VIN));
             }
 
-            // Повертаємо результати
-            return await query.ProjectTo<CarVm>(_mapper.ConfigurationProvider).ToListAsync();
+            // Debug — виведи в консоль що фільтрується
+            Console.WriteLine($"[Search] Brand={searchRequest.SelectedBrand}, SearchType={searchRequest.SearchType}, Year={searchRequest.Year}, Region={searchRequest.Region}");
+
+            return await query
+                .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
-
-
-
-        // Uncomment and complete the following methods as needed
-
-        // public async Task DeleteIfExistsAsync(int id)
-        // {
-        //     var car = await _carContext.Cars
-        //         .Include(x => x.Photos)
-        //         .FirstOrDefaultAsync(c => c.Id == id);
-        //
-        //     if (car == null)
-        //     {
-        //         throw new Exception("Car not found");
-        //     }
-        //
-        //     if (car.Photos != null && car.Photos.Any())
-        //     {
-        //         foreach (var photo in car.Photos)
-        //         {
-        //             _imageService.DeleteImageIfExists(photo.Name);
-        //         }
-        //     }
-        //
-        //     _carContext.Cars.Remove(car);
-        //     await _carContext.SaveChangesAsync();
-        // }
-
-
-
     }
 }

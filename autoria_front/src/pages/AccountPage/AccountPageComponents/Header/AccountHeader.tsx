@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../../redux/store';
 import { logout } from '../../../../redux/authSlice';
 import axios from 'axios';
+import ReviewsModal from '../../../../components/ReviewsModal/ReviewsModal';
 
 interface DecodedToken {
     firstName?: string;
@@ -29,9 +30,8 @@ const AccountHeader: React.FC = () => {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-
-    // Динамічні лічильники
     const [adsCount, setAdsCount] = useState<number>(0);
+    const [showReviews, setShowReviews] = useState(false);
 
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
@@ -44,7 +44,6 @@ const AccountHeader: React.FC = () => {
         }
     }
 
-    // Завантаження кількості оголошень
     useEffect(() => {
         const fetchAdsCount = async () => {
             if (!profileData.id || profileData.id === '0') return;
@@ -75,92 +74,93 @@ const AccountHeader: React.FC = () => {
     };
 
     return (
-        <aside className={`account-sidebar ${collapsed ? 'collapsed' : ''}`}>
+        <>
+            <aside className={`account-sidebar ${collapsed ? 'collapsed' : ''}`}>
 
-            {/* Profile Card */}
-            <div className="sidebar-card profile-section">
-                <ProfileCard name={profileData.name} id={profileData.id} collapsed={collapsed} />
-                <div className="sidebar-tab-buttons">
-                    <button
-                        className={`tab-btn ${location.pathname === '/account' ? 'active' : ''}`}
-                        onClick={() => navigate('/account')}
-                        title="Статистика"
-                    >
-                        {collapsed ? '📊' : 'Статистика'}
-                    </button>
-                    <button
-                        className={`tab-btn ${location.pathname === '/account/edit' ? 'active' : ''}`}
-                        onClick={() => navigate('/account/edit')}
-                        title="Налаштування"
-                    >
-                        {collapsed ? '⚙️' : 'Налаштування'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Balance — статично 0 грн поки немає API */}
-            <div className="sidebar-card balance-section">
-                <div className="balance-icon">💰</div>
-                {!collapsed && (
-                    <>
-                        <div className="balance-info">
-                            <span className="balance-amount">0 грн</span>
-                            <span className="balance-label">Баланс на сайті</span>
-                        </div>
-                        <button className="sidebar-action-btn">Поповнити</button>
-                    </>
-                )}
-            </div>
-
-            {/* Listings */}
-            <div className="sidebar-card listings-section">
-                <div className="balance-icon">🚗</div>
-                {!collapsed && (
-                    <>
-                        <div className="balance-info">
-                            <span className="balance-amount">Оголошення</span>
-                            <span className="balance-label">Кількість: {adsCount}</span>
-                        </div>
+                <div className="sidebar-card profile-section">
+                    <ProfileCard name={profileData.name} id={profileData.id} collapsed={collapsed} />
+                    <div className="sidebar-tab-buttons">
                         <button
-                            className="sidebar-action-btn"
-                            onClick={() => navigate('/post-ad')}
+                            className="tab-btn"
+                            onClick={() => setShowReviews(true)}
+                            title="Відгуки"
                         >
-                            Додати
+                            {collapsed ? '★' : 'Відгуки'}
                         </button>
-                    </>
-                )}
-            </div>
+                        <button
+                            className={`tab-btn ${location.pathname === '/account/edit' ? 'active' : ''}`}
+                            onClick={() => navigate('/account/edit')}
+                            title="Налаштування"
+                        >
+                            {collapsed ? '⚙️' : 'Налаштування'}
+                        </button>
+                    </div>
+                </div>
 
-            {/* Collapse toggle */}
-            <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
-                {collapsed ? '›' : '‹'}
-            </button>
+                <div className="sidebar-card balance-section">
+                    <div className="balance-icon">💰</div>
+                    {!collapsed && (
+                        <>
+                            <div className="balance-info">
+                                <span className="balance-amount">0 грн</span>
+                                <span className="balance-label">Баланс на сайті</span>
+                            </div>
+                            <button className="sidebar-action-btn">Поповнити</button>
+                        </>
+                    )}
+                </div>
 
-            {/* Navigation */}
-            <div className="sidebar-card nav-section">
-                {NAV_ITEMS.map((item, idx) => (
-                    <Link
-                        key={item.key}
-                        to={item.path}
-                        className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                        style={{ borderBottom: idx < NAV_ITEMS.length - 1 ? '1px solid #f0f0f0' : 'none' }}
-                    >
-                        {collapsed ? (
-                            <span className="nav-count">{item.count !== null ? `(${item.count})` : '·'}</span>
-                        ) : (
-                            <>
-                                <span className="nav-label">
-                                    {item.label}{item.count !== null ? ` (${item.count})` : ''}
-                                </span>
-                                <span className="nav-arrow">›</span>
-                            </>
-                        )}
-                    </Link>
-                ))}
-            </div>
+                <div className="sidebar-card listings-section">
+                    <div className="balance-icon">🚗</div>
+                    {!collapsed && (
+                        <>
+                            <div className="balance-info">
+                                <span className="balance-amount">Оголошення</span>
+                                <span className="balance-label">Кількість: {adsCount}</span>
+                            </div>
+                            <button
+                                className="sidebar-action-btn"
+                                onClick={() => navigate('/post-ad')}
+                            >
+                                Додати
+                            </button>
+                        </>
+                    )}
+                </div>
 
-            <button className="logout-btn" onClick={handleLogout}>Вийти</button>
-        </aside>
+                <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
+                    {collapsed ? '›' : '‹'}
+                </button>
+
+                <div className="sidebar-card nav-section">
+                    {NAV_ITEMS.map((item, idx) => (
+                        <Link
+                            key={item.key}
+                            to={item.path}
+                            className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+                            style={{ borderBottom: idx < NAV_ITEMS.length - 1 ? '1px solid #f0f0f0' : 'none' }}
+                        >
+                            {collapsed ? (
+                                <span className="nav-count">{item.count !== null ? `(${item.count})` : '·'}</span>
+                            ) : (
+                                <>
+                                    <span className="nav-label">
+                                        {item.label}{item.count !== null ? ` (${item.count})` : ''}
+                                    </span>
+                                    <span className="nav-arrow">›</span>
+                                </>
+                            )}
+                        </Link>
+                    ))}
+                </div>
+
+                <button className="logout-btn" onClick={handleLogout}>Вийти</button>
+            </aside>
+
+            {showReviews && profileData.id !== '0' && (
+                <ReviewsModal userId={profileData.id} onClose={() => setShowReviews(false)} />
+            )}
+        </>
     );
 };
 

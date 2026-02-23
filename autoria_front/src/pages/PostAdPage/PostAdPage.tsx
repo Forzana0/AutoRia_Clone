@@ -43,7 +43,6 @@ const PostAdPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const userId = token ? decodeToken(token)?.id : null;
 
-    // ── Redirect to auth if not logged in ──
     useEffect(() => {
         if (!userId) {
             navigate('/auth');
@@ -185,10 +184,8 @@ const PostAdPage: React.FC = () => {
         }
     };
 
-    // Якщо не авторизований — нічого не рендеримо (useEffect вже перекинув)
     if (!userId) return null;
 
-    // ── STEP: type ──
     if (step === 'type') return (
         <div className="post-ad-page">
             <div className="post-ad-card">
@@ -219,7 +216,6 @@ const PostAdPage: React.FC = () => {
         </div>
     );
 
-    // ── STEP: photos ──
     if (step === 'photos') return (
         <div className="post-ad-page">
             <div className="post-ad-card">
@@ -260,7 +256,6 @@ const PostAdPage: React.FC = () => {
         </div>
     );
 
-    // ── STEP: success ──
     if (step === 'success') return (
         <div className="post-ad-page">
             <div className="post-ad-card post-ad-success">
@@ -361,17 +356,22 @@ const PostAdPage: React.FC = () => {
                                 {engineVolumes.map(e => <option key={e.id} value={e.volume}>{e.volume}</option>)}
                             </select>
                         </div>
+
+                        {/* ── Змінений блок ── */}
                         <div className="form-field">
                             <label>Кількість місць</label>
                             <select name="numberOfSeats" value={form.numberOfSeats} onChange={handleChange}>
                                 <option value="">Оберіть</option>
-                                {numberOfSeats.map(n => (
-                                    <option key={n.id} value={String(n.number)}>
-                                        {n.number} {n.seatType}
-                                    </option>
-                                ))}
+                                {[...numberOfSeats]
+                                    .sort((a, b) => a.number - b.number)
+                                    .map(n => (
+                                        <option key={n.id} value={String(n.number)}>
+                                            {n.number}
+                                        </option>
+                                    ))}
                             </select>
                         </div>
+
                         <div className="form-field">
                             <label>Місто</label>
                             <select name="city" value={form.city} onChange={handleChange}>

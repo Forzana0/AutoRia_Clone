@@ -190,7 +190,7 @@
     padding: 11px;
     font-size: 14px;
     font-weight: 700;
-    cursor: not-allowed;
+    cursor: pointer;
     font-family: inherit;
     opacity: 0.9;
 }

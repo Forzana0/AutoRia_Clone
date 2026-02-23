@@ -57,10 +57,7 @@ namespace AutoRia.Controllers
             var token = await jwtTokenService.CreateTokenAsync(user);
             await userManager.SetAuthenticationTokenAsync(user, "JWT", "AccessToken", token);
 
-            return Ok(new JwtTokenResponse
-            {
-                Token = token
-            });
+            return Ok(new JwtTokenResponse { Token = token });
         }
 
         [HttpPost]
@@ -72,10 +69,7 @@ namespace AutoRia.Controllers
                 var token = await jwtTokenService.CreateTokenAsync(user);
                 await userManager.SetAuthenticationTokenAsync(user, "JWT", "AccessToken", token);
 
-                return Ok(new JwtTokenResponse
-                {
-                    Token = token
-                });
+                return Ok(new JwtTokenResponse { Token = token });
             }
             catch (ArgumentNullException ex)
             {
@@ -144,8 +138,13 @@ namespace AutoRia.Controllers
                 user.Region = "Вказано не вірно";
             }
 
+            // Нове фото
             if (model.Photo != null)
                 user.Photo = await imageService.SaveImageAsync(model.Photo);
+
+            // Видалення фото
+            if (model.DeletePhoto == true)
+                user.Photo = null;
 
             user.Email = model.Email ?? user.Email;
             user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
@@ -175,6 +174,72 @@ namespace AutoRia.Controllers
                 return BadRequest(resetPasswordResult.Errors);
 
             return Ok("Пароль успішно оновлено");
+        }
+
+        // DELETE: api/Accounts/DeleteAccount/{userId}
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteAccount(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("Користувача не знайдено");
+
+            try
+            {
+                var userIdInt = int.Parse(userId);
+
+                // 1. Всі CarId цього користувача
+                var userCarIds = await context.UserCars
+                    .Where(uc => uc.UserId == userIdInt)
+                    .Select(uc => uc.CarId)
+                    .ToListAsync();
+
+                if (userCarIds.Any())
+                {
+                    // 2. Видаляємо фото авто з диску
+                    var photos = await context.CarPhotos
+                        .Where(p => userCarIds.Contains(p.CarId))
+                        .ToListAsync();
+                    foreach (var photo in photos)
+                        imageService.DeleteImageIfExists(photo.Name);
+                    context.CarPhotos.RemoveRange(photos);
+
+                    // 3. Видаляємо UserCars
+                    var userCars = await context.UserCars
+                        .Where(uc => uc.UserId == userIdInt)
+                        .ToListAsync();
+                    context.UserCars.RemoveRange(userCars);
+
+                    // 4. Видаляємо самі авто
+                    var cars = await context.Cars
+                        .Where(c => userCarIds.Contains(c.Id))
+                        .ToListAsync();
+                    context.Cars.RemoveRange(cars);
+                }
+
+                // 5. Видаляємо відгуки
+                var reviews = await context.Reviews
+                    .Where(r => r.FromUserId == userIdInt || r.ToUserId == userIdInt)
+                    .ToListAsync();
+                context.Reviews.RemoveRange(reviews);
+
+                await context.SaveChangesAsync();
+
+                // 6. Фото профілю
+                if (!string.IsNullOrEmpty(user.Photo))
+                    imageService.DeleteImageIfExists(user.Photo);
+
+                // 7. Видаляємо користувача через Identity
+                var result = await userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors);
+
+                return Ok("Акаунт успішно видалено");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Помилка при видаленні акаунту", Details = ex.Message });
+            }
         }
     }
 }

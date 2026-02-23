@@ -14,5 +14,6 @@ namespace AutoRia.SearchReauestClasses
         public string? Description { get; set; }
         //public string Rating { get; set; } = null!;
         public IFormFile? Photo { get; set; }
+        public bool? DeletePhoto { get; set; }
     }
 }

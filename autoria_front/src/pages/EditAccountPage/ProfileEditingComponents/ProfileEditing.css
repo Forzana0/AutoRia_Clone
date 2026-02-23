@@ -196,3 +196,123 @@
     color: #9ca3af;
     margin: 0 0 12px;
 }
+
+.settings-danger-zone {
+    margin-top: 8px;
+    border: 1.5px solid #fecaca;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fff5f5;
+}
+
+.settings-danger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.settings-danger-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1d23;
+    margin-bottom: 4px;
+}
+
+.settings-danger-desc {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.settings-delete-account-btn {
+    background: transparent;
+    border: 1.5px solid #ef4444;
+    color: #ef4444;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.settings-delete-account-btn:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* Confirm modal */
+.settings-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.settings-confirm-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    font-family: 'Manrope', sans-serif;
+}
+
+.settings-confirm-modal h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1d23;
+    margin-bottom: 10px;
+}
+
+.settings-confirm-modal p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.settings-confirm-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.settings-confirm-cancel {
+    background: #f3f4f6;
+    border: none;
+    color: #374151;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.settings-confirm-cancel:hover { background: #e5e7eb; }
+
+.settings-confirm-delete {
+    background: #ef4444;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+}
+
+.settings-confirm-delete:hover { opacity: 0.85; }
+.settings-confirm-delete:disabled { opacity: 0.5; cursor: not-allowed; }

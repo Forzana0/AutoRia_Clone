@@ -18,9 +18,8 @@ namespace AutoRia.Controllers
     {
         private readonly IMapper _mapper;
         private readonly CarDbContext _context;
-        public TechnicalSpecificationsController(
-        IMapper mapper,
-            CarDbContext context)
+
+        public TechnicalSpecificationsController(IMapper mapper, CarDbContext context)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -29,73 +28,53 @@ namespace AutoRia.Controllers
         [HttpGet("bodytypes")]
         public async Task<ActionResult<IEnumerable<BodyTypeVm>>> GetBodyTypes()
         {
-            var bodyTypes = await _context.BodyTypes.ToListAsync();
-            var bodyTypeVms = _mapper.Map<IEnumerable<BodyTypeVm>>(bodyTypes);
-
-            return Ok(bodyTypeVms);
+            var bodyTypes = await _context.BodyTypes.OrderBy(b => b.Name).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<BodyTypeVm>>(bodyTypes));
         }
 
-        // GET: api/technicalspecifications/fueltypes
         [HttpGet("fueltypes")]
         public async Task<ActionResult<IEnumerable<FuelTypeVm>>> GetFuelTypes()
         {
-            var fuelTypes = await _context.FuelTypes.ToListAsync();
-            var fuelTypeVms = _mapper.Map<IEnumerable<FuelTypeVm>>(fuelTypes);
-
-            return Ok(fuelTypeVms);
+            var fuelTypes = await _context.FuelTypes.OrderBy(f => f.Name).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<FuelTypeVm>>(fuelTypes));
         }
 
-        // GET: api/technicalspecifications/enginevolumes
         [HttpGet("enginevolumes")]
         public async Task<ActionResult<IEnumerable<EngineVolumeVm>>> GetEngineVolumes()
         {
-            var engineVolumes = await _context.EngineVolumes.ToListAsync();
-            var engineVolumeVms = _mapper.Map<IEnumerable<EngineVolumeVm>>(engineVolumes);
-
-            return Ok(engineVolumeVms);
+            var engineVolumes = await _context.EngineVolumes.OrderBy(e => e.Volume).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<EngineVolumeVm>>(engineVolumes));
         }
 
-        // GET: api/technicalspecifications/numberofseats
         [HttpGet("numberofseats")]
         public async Task<ActionResult<IEnumerable<NumberOfSeatsVm>>> GetNumberOfSeats()
         {
-            var numberOfSeats = await _context.numbersOfSeats.ToListAsync();
-            var numberOfSeatsVms = _mapper.Map<IEnumerable<NumberOfSeatsVm>>(numberOfSeats);
-
-            return Ok(numberOfSeatsVms);
+            var numberOfSeats = await _context.numbersOfSeats.OrderBy(n => n.Number).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<NumberOfSeatsVm>>(numberOfSeats));
         }
 
-        // GET: api/technicalspecifications/transmissiontypes
         [HttpGet("transmissiontypes")]
         public async Task<ActionResult<IEnumerable<TransmissionTypeVm>>> GetTransmissionTypes()
         {
-            var transmissionTypes = await _context.TransmissionTypes.ToListAsync();
-            var transmissionTypeVms = _mapper.Map<IEnumerable<TransmissionTypeVm>>(transmissionTypes);
-
-            return Ok(transmissionTypeVms);
+            var transmissionTypes = await _context.TransmissionTypes.OrderBy(t => t.Name).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<TransmissionTypeVm>>(transmissionTypes));
         }
 
         [HttpGet("brandsandmodels")]
         public async Task<ActionResult<IEnumerable<CarBrandVm>>> GetCarBrands()
         {
             var carBrands = await _context.Brands
-                .Include(cb => cb.Models)
+                .Include(cb => cb.Models.OrderBy(m => m.Name)) // моделі сортуємо за алфавітом
+                .OrderBy(b => b.Name)                          // бренди теж за алфавітом
                 .ToListAsync();
-
-            var carBrandVms = _mapper.Map<IEnumerable<CarBrandVm>>(carBrands);
-
-            return Ok(carBrandVms);
+            return Ok(_mapper.Map<IEnumerable<CarBrandVm>>(carBrands));
         }
 
         [HttpGet("transporttypes")]
         public async Task<ActionResult<IEnumerable<TransportTypeVm>>> GetTransportTypes()
         {
-            var carTypes = await _context.TransportTypes
-                .ToListAsync();
-
-            var carTypesVms = _mapper.Map<IEnumerable<TransportTypeVm>>(carTypes);
-
-            return Ok(carTypesVms);
+            var carTypes = await _context.TransportTypes.OrderBy(t => t.Name).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<TransportTypeVm>>(carTypes));
         }
     }
 }
