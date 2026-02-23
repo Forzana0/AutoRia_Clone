@@ -1,83 +1,123 @@
-.car-search-form-wrapper {
-    background: #fff;
-    border-radius: 16px;
+.csf-wrapper {
+    background: #eef0f8;
+    border-radius: 20px;
     padding: 20px 24px 24px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
     font-family: 'Manrope', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.search-form-header {
+/* Header */
+.csf-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
-.search-form-header h3 {
+.csf-title {
     font-size: 16px;
     font-weight: 800;
     color: #1a1d23;
-    margin: 0;
 }
 
-/* Category tabs */
-.category-tabs {
+.csf-advanced-btn {
+    background: transparent;
+    border: 1.5px solid #c4c9e0;
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+
+.csf-advanced-btn:hover {
+    border-color: #3b5bdb;
+    color: #3b5bdb;
+}
+
+/* Transport grid — рівномірно по рядку */
+.csf-transport-grid {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    padding-bottom: 2px;
 }
 
-.category-tab {
+.csf-transport-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 10px 14px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 12px;
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 68px;
+    padding: 10px 8px;
     background: #fff;
+    border: 2px solid transparent;
+    border-radius: 14px;
     cursor: pointer;
     font-family: inherit;
+    color: #374151;
+    transition: all 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.csf-transport-btn:hover {
+    border-color: #3b5bdb;
+    color: #3b5bdb;
+}
+
+.csf-transport-btn.active {
+    border-color: #3b5bdb;
+    color: #3b5bdb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,91,219,0.12);
+}
+
+.csf-transport-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.csf-transport-icon svg {
+    width: 34px;
+    height: 34px;
+}
+
+.csf-transport-btn.active .csf-transport-icon svg,
+.csf-transport-btn:hover .csf-transport-icon svg {
+    color: #3b5bdb;
+}
+
+.csf-transport-label {
     font-size: 11px;
     font-weight: 600;
-    color: #4b5563;
-    transition: all 0.15s;
-    min-width: 68px;
+    white-space: nowrap;
+    color: inherit;
 }
 
-.category-tab:hover {
-    border-color: #3b5bdb;
-    color: #3b5bdb;
-}
-
-.category-tab.active {
-    border-color: #3b5bdb;
-    background: #eef2ff;
-    color: #3b5bdb;
-}
-
-.tab-icon { font-size: 20px; }
-.tab-label { white-space: nowrap; }
-
-/* Filter row */
-.filter-row {
+/* Filters row */
+.csf-filters-row {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
-    position: relative;
+    margin-bottom: 14px;
 }
 
-.filter-row-bottom {
-    margin-top: 8px;
-}
-
-.filter-select {
+.csf-select {
     flex: 1;
-    min-width: 120px;
-    padding: 10px 14px;
-    border: 1.5px solid #e5e7eb;
+    min-width: 110px;
+    padding: 10px 12px;
+    border: 1.5px solid #d1d5db;
     border-radius: 10px;
     font-size: 13px;
     font-family: inherit;
@@ -87,68 +127,71 @@
     outline: none;
     transition: border-color 0.15s;
     appearance: auto;
+    height: 42px;
 }
 
-.filter-select:focus,
-.filter-select:hover {
+.csf-select:focus,
+.csf-select:hover {
     border-color: #3b5bdb;
 }
 
-.filter-select:disabled {
-    opacity: 0.5;
+.csf-select:disabled {
+    opacity: 0.45;
     cursor: not-allowed;
 }
 
-/* Price dropdown */
-.filter-price-wrap {
-    position: relative;
-    flex: 1;
-    min-width: 120px;
+.csf-select-region {
+    flex: 1.2;
 }
 
-.filter-price-btn {
+/* Price */
+.csf-price-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 110px;
+}
+
+.csf-price-btn {
     width: 100%;
-    text-align: left;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 6px;
     cursor: pointer;
     background: #fff;
+    text-align: left;
+    font-size: 13px;
+    color: #374151;
 }
 
-.filter-price-btn.open {
+.csf-price-btn.open {
     border-color: #3b5bdb;
 }
 
-.price-chevron {
-    font-size: 10px;
-    color: #9ca3af;
-}
-
-.price-dropdown {
+.csf-price-dropdown {
     position: absolute;
     top: calc(100% + 6px);
-    right: 0;
-    left: auto;
+    left: 0;
     min-width: 240px;
     background: #fff;
     border: 1.5px solid #e5e7eb;
     border-radius: 12px;
     padding: 14px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    z-index: 200;
+    z-index: 300;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.price-inputs {
+.csf-price-inputs {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.price-inputs input {
+.csf-price-inputs input {
     flex: 1;
     padding: 8px 10px;
     border: 1.5px solid #e5e7eb;
@@ -156,12 +199,13 @@
     font-size: 13px;
     font-family: inherit;
     outline: none;
+    color: #374151;
 }
 
-.price-inputs input:focus { border-color: #3b5bdb; }
-.price-inputs span { color: #9ca3af; font-weight: 600; }
+.csf-price-inputs input:focus { border-color: #3b5bdb; }
+.csf-price-inputs span { color: #9ca3af; font-weight: 600; }
 
-.price-apply-btn {
+.csf-price-apply {
     background: #1a1a2e;
     color: #fff;
     border: none;
@@ -174,22 +218,27 @@
     transition: opacity 0.15s;
 }
 
-.price-apply-btn:hover { opacity: 0.85; }
+.csf-price-apply:hover { opacity: 0.85; }
 
-/* Search button */
-.btn-search {
-    padding: 10px 24px;
+/* Search button — по центру */
+.csf-search-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+.csf-search-btn {
+    padding: 12px 56px;
     background: #1a1a2e;
     color: #fff;
     border: none;
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    white-space: nowrap;
     transition: opacity 0.15s;
-    flex-shrink: 0;
+    letter-spacing: 0.2px;
 }
 
-.btn-search:hover { opacity: 0.85; }
+.csf-search-btn:hover { opacity: 0.85; }

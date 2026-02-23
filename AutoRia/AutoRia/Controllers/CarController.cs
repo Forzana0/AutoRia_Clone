@@ -29,6 +29,14 @@ namespace WebBack.Controllers
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
+        // Сортує фото за Priority після маппінгу
+        private static void SortPhotos(IEnumerable<CarVm> cars)
+        {
+            foreach (var car in cars)
+                if (car.Photos != null)
+                    car.Photos = car.Photos.OrderBy(p => p.Priority).ToList();
+        }
+
         // POST: api/Car/search
         [HttpPost("search")]
         public async Task<IActionResult> SearchCars([FromBody] CarSearchRequest searchRequest)
@@ -54,6 +62,8 @@ namespace WebBack.Controllers
             var cars = await _context.Cars
                 .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .ToArrayAsync();
+
+            SortPhotos(cars);
             return Ok(cars);
         }
 
@@ -72,6 +82,9 @@ namespace WebBack.Controllers
 
             if (car == null)
                 return NotFound();
+
+            if (car.Photos != null)
+                car.Photos = car.Photos.OrderBy(p => p.Priority).ToList();
 
             if (carUser != null)
             {
@@ -103,7 +116,7 @@ namespace WebBack.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromForm] CarEditVm vm)
         {
-            vm.Id = id; // прив'язуємо id з URL до моделі
+            vm.Id = id;
 
             try
             {
@@ -148,6 +161,7 @@ namespace WebBack.Controllers
                 .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .ToArrayAsync();
 
+            SortPhotos(cars);
             return Ok(cars);
         }
 

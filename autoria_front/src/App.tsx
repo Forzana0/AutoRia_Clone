@@ -13,7 +13,6 @@ import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
-// Скролить вгору при кожному переході між сторінками
 const ScrollToTop: React.FC = () => {
     const { pathname } = useLocation();
     useEffect(() => {
@@ -37,7 +36,7 @@ const App: React.FC = () => {
                 <Route path="/seller/:userId"  element={<SellerPage />} />
 
                 <Route path="/account" element={<AccountPage />}>
-                    <Route index                element={<div>Статистика (coming soon)</div>} />
+                    <Route index                element={<MyAds />} />
                     <Route path="edit"          element={<EditAccountPage />} />
                     <Route path="ads"           element={<MyAds />} />
                     <Route path="messages"      element={<div>Повідомлення</div>} />

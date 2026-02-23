@@ -274,9 +274,16 @@ namespace AutoRia.Services.ControllerServices
             // Debug — виведи в консоль що фільтрується
             Console.WriteLine($"[Search] Brand={searchRequest.SelectedBrand}, SearchType={searchRequest.SearchType}, Year={searchRequest.Year}, Region={searchRequest.Region}");
 
-            return await query
+            var cars = await query
                 .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+
+            // Сортуємо фото за Priority після отримання даних з БД
+            foreach (var car in cars)
+                if (car.Photos != null)
+                    car.Photos = car.Photos.OrderBy(p => p.Priority).ToList();
+
+            return cars;
         }
     }
 }
