@@ -124,7 +124,6 @@ const CarSearchForm: React.FC = () => {
             {/* Header */}
             <div className="csf-header">
                 <span className="csf-title">Пошук</span>
-                <button className="csf-advanced-btn">Розширений пошук</button>
             </div>
 
             {/* Transport type grid */}

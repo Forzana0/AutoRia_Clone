@@ -212,6 +212,37 @@ namespace AutoRia.Services.ControllerServices
         {
             IQueryable<CarEntity> query = _carContext.Cars.AsQueryable();
 
+            // ── Текстовий пошук (з рядка пошуку) ─────────────────────
+            if (!string.IsNullOrWhiteSpace(searchRequest.TextQuery))
+            {
+                var parts = searchRequest.TextQuery.Trim().ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var part in parts)
+                {
+                    var p = part; // closure fix
+                    if (int.TryParse(p, out int yearPart) && yearPart > 1900 && yearPart <= DateTime.Now.Year)
+                    {
+                        query = query.Where(c => c.Year == yearPart);
+                    }
+                    else
+                    {
+                        query = query.Where(c =>
+                            (c.CarBrand != null && c.CarBrand.Name.ToLower().Contains(p)) ||
+                            (c.CarModel != null && c.CarModel.Name.ToLower().Contains(p)));
+                    }
+                }
+
+                var cars2 = await query
+                    .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+                foreach (var car in cars2)
+                    if (car.Photos != null)
+                        car.Photos = car.Photos.OrderBy(p2 => p2.Priority).ToList();
+
+                return cars2;
+            }
+
             if (!string.IsNullOrWhiteSpace(searchRequest.SelectedBrand) &&
                 searchRequest.SelectedBrand != "Будь-який")
             {
