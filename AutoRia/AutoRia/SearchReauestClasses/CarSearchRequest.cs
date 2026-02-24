@@ -8,11 +8,14 @@
         public string? SearchType { get; set; }
         public string? SelectedBrand { get; set; }
         public string? SelectedModel { get; set; }
+        public string? BodyType { get; set; }
         public bool VinChecked { get; set; }
         public string? Year { get; set; }
         public string? TextQuery { get; set; }
         public string? FuelType { get; set; }
         public string? TransmissionType { get; set; }
         public string? Mileage { get; set; }
+        public string? EngineVolume { get; set; }
+        public string? NumberOfSeats { get; set; }
     }
 }

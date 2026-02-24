@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './PostAdPage.css';
+import Avtobusu from '../../images/avtobusu.png'
+import Lehkovi from '../../images/lehkovi.png';
+import Vantashni from '../../images/vantashni.png';
+import Komertsini from '../../images/komertsini.png';
+import Moto from '../../images/moto.png';
+import Spestehnika from '../../images/spestehnika.png';
+import Pruchepu from '../../images/pruchepu.png';
+import Vodnui from '../../images/vodnui.png';
 
 const API = 'http://localhost:5174/api';
 
@@ -43,6 +51,7 @@ const PostAdPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const userId = token ? decodeToken(token)?.id : null;
 
+    // ── Redirect to auth if not logged in ──
     useEffect(() => {
         if (!userId) {
             navigate('/auth');
@@ -184,7 +193,36 @@ const PostAdPage: React.FC = () => {
         }
     };
 
+    // Якщо не авторизований — нічого не рендеримо (useEffect вже перекинув)
     if (!userId) return null;
+
+    // ── STEP: type ──
+    // SVG іконки транспорту — точно за дизайном
+    const TRANSPORT_ICONS: Record<string, React.ReactNode> = {
+        'Легковий': <img src={Lehkovi} width={38} height={15} alt="car" />,
+        'Легкові':  <img src={Lehkovi} width={38} height={15} alt="car" />,
+        'Вантажний': <img src={Vantashni} width={38} height={18} alt="car" />,
+        'Вантажні':  <img src={Vantashni} width={38} height={18} alt="car" />,
+        'Комерційний': <img src={Komertsini} width={36} height={16} alt="car" />,
+        'Комерційні':  <img src={Komertsini} width={36} height={16} alt="car" />,
+        'Автобус':  <img src={Avtobusu} width={36} height={15} alt="car" />,
+        'Автобуси': <img src={Avtobusu} width={36} height={15} alt="car" />,
+        'Мото': <img src={Moto} width={36} height={18} alt="car" />,
+        'Спецтехніка': <img src={Spestehnika} width={36} height={18} alt="car" />,
+        'Причіп':  <img src={Pruchepu} width={36} height={18} alt="car" />,
+        'Причепи': <img src={Pruchepu} width={36} height={18} alt="car" />,
+        'Водний': <img src={Vodnui} width={36} height={18} alt="car" />,
+        'Водні':  <img src={Vodnui} width={36} height={18} alt="car" />,
+    };
+
+    const getTransportIcon = (name: string): React.ReactNode => {
+        if (TRANSPORT_ICONS[name]) return TRANSPORT_ICONS[name];
+        const key = Object.keys(TRANSPORT_ICONS).find(k =>
+            k.toLowerCase().startsWith(name.toLowerCase().slice(0, 4)) ||
+            name.toLowerCase().startsWith(k.toLowerCase().slice(0, 4))
+        );
+        return key ? TRANSPORT_ICONS[key] : TRANSPORT_ICONS['Легкові'];
+    };
 
     if (step === 'type') return (
         <div className="post-ad-page">
@@ -198,7 +236,7 @@ const PostAdPage: React.FC = () => {
                             className={`transport-btn ${form.transportType === t.name ? 'active' : ''}`}
                             onClick={() => setForm(f => ({ ...f, transportType: t.name }))}
                         >
-                            <span className="transport-icon">🚗</span>
+                            <span className="transport-icon">{getTransportIcon(t.name)}</span>
                             <span>{t.name}</span>
                         </button>
                     ))}
@@ -216,6 +254,7 @@ const PostAdPage: React.FC = () => {
         </div>
     );
 
+    // ── STEP: photos ──
     if (step === 'photos') return (
         <div className="post-ad-page">
             <div className="post-ad-card">
@@ -256,6 +295,7 @@ const PostAdPage: React.FC = () => {
         </div>
     );
 
+    // ── STEP: success ──
     if (step === 'success') return (
         <div className="post-ad-page">
             <div className="post-ad-card post-ad-success">
@@ -356,22 +396,17 @@ const PostAdPage: React.FC = () => {
                                 {engineVolumes.map(e => <option key={e.id} value={e.volume}>{e.volume}</option>)}
                             </select>
                         </div>
-
-                        {/* ── Змінений блок ── */}
                         <div className="form-field">
                             <label>Кількість місць</label>
                             <select name="numberOfSeats" value={form.numberOfSeats} onChange={handleChange}>
                                 <option value="">Оберіть</option>
-                                {[...numberOfSeats]
-                                    .sort((a, b) => a.number - b.number)
-                                    .map(n => (
-                                        <option key={n.id} value={String(n.number)}>
-                                            {n.number}
-                                        </option>
-                                    ))}
+                                {numberOfSeats.map(n => (
+                                    <option key={n.id} value={String(n.number)}>
+                                        {n.number}
+                                    </option>
+                                ))}
                             </select>
                         </div>
-
                         <div className="form-field">
                             <label>Місто</label>
                             <select name="city" value={form.city} onChange={handleChange}>

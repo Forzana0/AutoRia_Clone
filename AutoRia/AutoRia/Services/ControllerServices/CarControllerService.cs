@@ -297,6 +297,31 @@ namespace AutoRia.Services.ControllerServices
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(searchRequest.BodyType) &&
+                searchRequest.BodyType != "Будь-який")
+            {
+                query = query.Where(c => c.BodyType != null && c.BodyType.Name == searchRequest.BodyType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.EngineVolume) &&
+                searchRequest.EngineVolume != "Будь-який")
+            {
+                if (float.TryParse(searchRequest.EngineVolume,
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out float vol))
+                {
+                    query = query.Where(c => c.EngineVolume != null && c.EngineVolume.Volume == vol);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.NumberOfSeats) &&
+                searchRequest.NumberOfSeats != "Будь-яка")
+            {
+                if (int.TryParse(searchRequest.NumberOfSeats, out int seats))
+                    query = query.Where(c => c.NumberOfSeats != null && c.NumberOfSeats.Number == seats);
+            }
+
             if (!string.IsNullOrWhiteSpace(searchRequest.FuelType) &&
                 searchRequest.FuelType != "Будь-який")
             {

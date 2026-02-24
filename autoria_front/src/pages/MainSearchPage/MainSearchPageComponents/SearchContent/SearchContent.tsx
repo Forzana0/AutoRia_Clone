@@ -24,8 +24,10 @@ interface CarItem {
 
 interface FilterState {
     stage: string;
+    transportType: string;
     carBrand: string;
     carModel: string;
+    bodyType: string;
     yearFrom: string;
     yearTo: string;
     priceFrom: string;
@@ -35,12 +37,15 @@ interface FilterState {
     transmissionType: string;
     mileageFrom: string;
     mileageTo: string;
+    engineVolume: string;
+    numberOfSeats: string;
 }
 
 const defaultFilters: FilterState = {
-    stage: '', carBrand: '', carModel: '', yearFrom: '', yearTo: '',
-    priceFrom: '', priceTo: '', city: '', fuelType: '', transmissionType: '',
-    mileageFrom: '', mileageTo: '',
+    stage: '', transportType: '', carBrand: '', carModel: '', bodyType: '',
+    yearFrom: '', yearTo: '', priceFrom: '', priceTo: '', city: '',
+    fuelType: '', transmissionType: '', mileageFrom: '', mileageTo: '',
+    engineVolume: '', numberOfSeats: '',
 };
 
 const YEARS = Array.from({ length: 40 }, (_, i) => 2025 - i);
@@ -63,20 +68,32 @@ const SearchContent: React.FC = () => {
     const [cities, setCities] = useState<{ id: number; name: string }[]>([]);
     const [fuelTypes, setFuelTypes] = useState<{ id: number; name: string }[]>([]);
     const [transmissions, setTransmissions] = useState<{ id: number; name: string }[]>([]);
+    const [transportTypes, setTransportTypes] = useState<{ id: number; name: string }[]>([]);
+    const [bodyTypes, setBodyTypes] = useState<{ id: number; name: string }[]>([]);
+    const [engineVolumes, setEngineVolumes] = useState<{ id: number; volume: string }[]>([]);
+    const [numberOfSeats, setNumberOfSeats] = useState<{ id: number; number: number }[]>([]);
 
     // Load dropdown data for filter modal
     useEffect(() => {
         const fetchDropdowns = async () => {
             try {
-                const [bmRes, regRes, ftRes, trRes] = await Promise.all([
+                const [bmRes, regRes, ftRes, trRes, ttRes, btRes, evRes, nsRes] = await Promise.all([
                     axios.get(`${API}/api/TechnicalSpecifications/brandsandmodels`),
                     axios.get(`${API}/api/RegionalAndPricing`),
                     axios.get(`${API}/api/TechnicalSpecifications/fueltypes`),
                     axios.get(`${API}/api/TechnicalSpecifications/transmissiontypes`),
+                    axios.get(`${API}/api/TechnicalSpecifications/transporttypes`),
+                    axios.get(`${API}/api/TechnicalSpecifications/bodytypes`),
+                    axios.get(`${API}/api/TechnicalSpecifications/enginevolumes`),
+                    axios.get(`${API}/api/TechnicalSpecifications/numberofseats`),
                 ]);
                 setBrands(bmRes.data || []);
                 setFuelTypes(ftRes.data || []);
                 setTransmissions(trRes.data || []);
+                setTransportTypes(ttRes.data || []);
+                setBodyTypes(btRes.data || []);
+                setEngineVolumes(evRes.data || []);
+                setNumberOfSeats(nsRes.data || []);
                 const allCities: { id: number; name: string }[] = [];
                 (regRes.data as any[]).forEach(r => r.cities?.forEach((c: any) => allCities.push(c)));
                 setCities(allCities);
@@ -143,10 +160,11 @@ const SearchContent: React.FC = () => {
         setCurrentPage(1);
         try {
             const searchRequest = {
-                carType: null,
+                carType: filters.transportType || null,
                 searchType: filters.stage || null,
                 selectedBrand: filters.carBrand || null,
                 selectedModel: filters.carModel || null,
+                bodyType: filters.bodyType || null,
                 year: filters.yearFrom || null,
                 region: filters.city || null,
                 price: (filters.priceFrom || filters.priceTo)
@@ -157,6 +175,8 @@ const SearchContent: React.FC = () => {
                 mileage: (filters.mileageFrom || filters.mileageTo)
                     ? `${filters.mileageFrom || '0'}-${filters.mileageTo || '9999999'}`
                     : null,
+                engineVolume: filters.engineVolume || null,
+                numberOfSeats: filters.numberOfSeats || null,
                 vinChecked: false,
             };
             const res = await axios.post(`${API}/api/Car/search`, searchRequest);
@@ -283,6 +303,17 @@ const SearchContent: React.FC = () => {
                         </div>
 
                         <div className="sc-filter-body">
+                            {/* Тип транспорту */}
+                            <div className="sc-filter-section">
+                                <h4>Тип транспорту</h4>
+                                <div className="sc-filter-chips">
+                                    <button className={`sc-chip ${filters.transportType === '' ? 'active' : ''}`} onClick={() => handleFilterChange('transportType', '')}>Всі</button>
+                                    {transportTypes.map(t => (
+                                        <button key={t.id} className={`sc-chip ${filters.transportType === t.name ? 'active' : ''}`} onClick={() => handleFilterChange('transportType', t.name)}>{t.name}</button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Стан */}
                             <div className="sc-filter-section">
                                 <h4>Стан</h4>
@@ -313,6 +344,17 @@ const SearchContent: React.FC = () => {
                                         <option value="">Рік випуску</option>
                                         {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                                     </select>
+                                </div>
+                            </div>
+
+                            {/* Тип кузова */}
+                            <div className="sc-filter-section">
+                                <h4>Тип кузова</h4>
+                                <div className="sc-filter-chips">
+                                    <button className={`sc-chip ${filters.bodyType === '' ? 'active' : ''}`} onClick={() => handleFilterChange('bodyType', '')}>Всі</button>
+                                    {bodyTypes.map(b => (
+                                        <button key={b.id} className={`sc-chip ${filters.bodyType === b.name ? 'active' : ''}`} onClick={() => handleFilterChange('bodyType', b.name)}>{b.name}</button>
+                                    ))}
                                 </div>
                             </div>
 
@@ -347,6 +389,26 @@ const SearchContent: React.FC = () => {
                                     <span>до</span>
                                     <input type="number" className="sc-range-input" placeholder="0" value={filters.mileageTo} onChange={e => handleFilterChange('mileageTo', e.target.value)} min={0} />
                                     <span>км</span>
+                                </div>
+                            </div>
+
+                            {/* Об'єм двигуна */}
+                            <div className="sc-filter-section">
+                                <h4>Об'єм двигуна</h4>
+                                <select className="sc-filter-select" value={filters.engineVolume} onChange={e => handleFilterChange('engineVolume', e.target.value)}>
+                                    <option value="">Будь-який</option>
+                                    {engineVolumes.map(e => <option key={e.id} value={e.volume}>{e.volume} л</option>)}
+                                </select>
+                            </div>
+
+                            {/* Кількість місць */}
+                            <div className="sc-filter-section">
+                                <h4>Кількість місць</h4>
+                                <div className="sc-filter-chips">
+                                    <button className={`sc-chip ${filters.numberOfSeats === '' ? 'active' : ''}`} onClick={() => handleFilterChange('numberOfSeats', '')}>Будь-яка</button>
+                                    {[...numberOfSeats].sort((a, b) => a.number - b.number).map(n => (
+                                        <button key={n.id} className={`sc-chip ${filters.numberOfSeats === String(n.number) ? 'active' : ''}`} onClick={() => handleFilterChange('numberOfSeats', String(n.number))}>{n.number}</button>
+                                    ))}
                                 </div>
                             </div>
 
