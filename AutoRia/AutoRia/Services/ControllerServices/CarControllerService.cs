@@ -297,6 +297,31 @@ namespace AutoRia.Services.ControllerServices
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(searchRequest.FuelType) &&
+                searchRequest.FuelType != "Будь-який")
+            {
+                query = query.Where(c => c.FuelTypes != null && c.FuelTypes.Name == searchRequest.FuelType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.TransmissionType) &&
+                searchRequest.TransmissionType != "Будь-який")
+            {
+                query = query.Where(c => c.TransmissionType != null && c.TransmissionType.Name == searchRequest.TransmissionType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.Mileage) &&
+                searchRequest.Mileage != "Будь-який")
+            {
+                var mParts = searchRequest.Mileage.Split('-');
+                if (mParts.Length == 2)
+                {
+                    if (decimal.TryParse(mParts[0], out decimal mileageFrom) && mileageFrom > 0)
+                        query = query.Where(c => c.Mileage >= mileageFrom);
+                    if (decimal.TryParse(mParts[1], out decimal mileageTo) && mileageTo > 0 && mileageTo < 9999999)
+                        query = query.Where(c => c.Mileage <= mileageTo);
+                }
+            }
+
             if (searchRequest.VinChecked)
             {
                 query = query.Where(c => !string.IsNullOrEmpty(c.VIN));

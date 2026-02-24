@@ -152,6 +152,11 @@ const SearchContent: React.FC = () => {
                 price: (filters.priceFrom || filters.priceTo)
                     ? `${filters.priceFrom || '0'}-${filters.priceTo || '999999'}`
                     : null,
+                fuelType: filters.fuelType || null,
+                transmissionType: filters.transmissionType || null,
+                mileage: (filters.mileageFrom || filters.mileageTo)
+                    ? `${filters.mileageFrom || '0'}-${filters.mileageTo || '9999999'}`
+                    : null,
                 vinChecked: false,
             };
             const res = await axios.post(`${API}/api/Car/search`, searchRequest);
