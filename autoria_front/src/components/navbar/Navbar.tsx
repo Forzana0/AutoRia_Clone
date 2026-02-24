@@ -93,13 +93,13 @@ const Navbar: React.FC = () => {
 
             <div className="navbar-bottom">
                 <ul className="nav-links">
-                    <li><a href="#">Нові авто</a></li>
+                    <li><a href="/search" onClick={e => { e.preventDefault(); navigate('/search', { state: { cars: undefined, searchParams: { searchType: 'Новий' } } }); }}>Нові авто</a></li>
                     <li><span>|</span></li>
-                    <li><a href="#">Вживані авто</a></li>
+                    <li><a href="/search" onClick={e => { e.preventDefault(); navigate('/search', { state: { cars: undefined, searchParams: { searchType: 'Вживаний' } } }); }}>Вживані авто</a></li>
                     <li><span>|</span></li>
-                    <li><a href="#">Мото</a></li>
+                    <li><a href="/search" onClick={e => { e.preventDefault(); navigate('/search', { state: { cars: undefined, searchParams: { carType: 'Мото' } } }); }}>Мото</a></li>
                     <li><span>|</span></li>
-                    <li><a href="#">Допомога</a></li>
+                    <li><a href="/help" onClick={e => { e.preventDefault(); navigate('/help'); }}>Допомога</a></li>
                     <li><span>|</span></li>
                     <li><a href="/about" onClick={e => { e.preventDefault(); navigate('/about'); }}>Про Нас</a></li>
                 </ul>

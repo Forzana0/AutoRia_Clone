@@ -5,6 +5,7 @@ import axios from 'axios';
 import './MyAds.css';
 import { RootState } from '../../../../redux/store';
 import EditAdModal from './EditAdModal';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 
 const API = 'http://localhost:5174';
 
@@ -50,8 +51,16 @@ const MyAds: React.FC = () => {
 
     useEffect(() => { fetchCars(); }, [userId]);
 
+    const [deleteId, setDeleteId] = React.useState<number | null>(null);
+
     const handleDelete = async (carId: number) => {
-        if (!window.confirm('Видалити це оголошення?')) return;
+        setDeleteId(carId);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        const carId = deleteId;
+        setDeleteId(null);
         setDeletingId(carId);
         try {
             await axios.delete(`${API}/api/Car/${carId}`, {
@@ -68,6 +77,17 @@ const MyAds: React.FC = () => {
 
     return (
         <>
+            {deleteId && (
+                <ConfirmModal
+                    title="Видалити оголошення?"
+                    message="Це оголошення буде назавжди видалено. Цю дію неможливо скасувати."
+                    confirmText="Так, видалити"
+                    cancelText="Скасувати"
+                    onConfirm={confirmDelete}
+                    onCancel={() => setDeleteId(null)}
+                    danger
+                />
+            )}
             <div className="my-ads-wrapper">
                 {loading ? (
                     <p className="my-ads-loading">Завантаження...</p>
@@ -115,7 +135,7 @@ const MyAds: React.FC = () => {
                                                 </button>
                                                 <button
                                                     className="my-ad-delete-btn"
-                                                    onClick={() => handleDelete(car.id)}
+                                                    onClick={() => setDeleteId(car.id)}
                                                     disabled={deletingId === car.id}
                                                 >
                                                     {deletingId === car.id ? '...' : 'Видалити'}

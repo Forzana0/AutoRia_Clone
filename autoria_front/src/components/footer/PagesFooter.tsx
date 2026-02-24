@@ -1,8 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './PagesFooter.css';
 
 const PagesFooter: React.FC = () => {
+    const navigate = useNavigate();
+    const goSearch = (carType: string) => navigate('/search', { state: { searchParams: { carType } } });
     return (
         <footer className="pages-footer">
             <div className="footer-inner">
@@ -36,14 +38,14 @@ const PagesFooter: React.FC = () => {
                 <div className="footer-col">
                     <h4>Тип автомобіля</h4>
                     <ul>
-                        <li><a href="#">Легкові</a></li>
-                        <li><a href="#">Комерційні</a></li>
-                        <li><a href="#">Вантажні</a></li>
-                        <li><a href="#">Причепи</a></li>
-                        <li><a href="#">Спецтехніка</a></li>
-                        <li><a href="#">Автобуси</a></li>
-                        <li><a href="#">Мото</a></li>
-                        <li><a href="#">Водний</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Легкові'); }}>Легкові</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Комерційні'); }}>Комерційні</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Вантажні'); }}>Вантажні</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Причепи'); }}>Причепи</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Спецтехніка'); }}>Спецтехніка</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Автобуси'); }}>Автобуси</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Мото'); }}>Мото</a></li>
+                        <li><a href="#" onClick={e => { e.preventDefault(); goSearch('Водний'); }}>Водний</a></li>
                     </ul>
                 </div>
 
@@ -52,7 +54,7 @@ const PagesFooter: React.FC = () => {
                     <h4>Інформація</h4>
                     <ul>
                         <li><Link to="/about">Про Нас</Link></li>
-                        <li><a href="#">Допомога</a></li>
+                        <li><Link to="/help">Допомога</Link></li>
                         <li><a href="#">Правила користування</a></li>
                         <li><a href="#">Договір оферти</a></li>
                         <li><a href="#">Політика конфіденційності</a></li>

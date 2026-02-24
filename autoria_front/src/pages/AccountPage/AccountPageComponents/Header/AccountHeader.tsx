@@ -8,6 +8,7 @@ import { logout } from '../../../../redux/authSlice';
 import axios from 'axios';
 import ReviewsModal from '../../../../components/ReviewsModal/ReviewsModal';
 import { useFavorites } from '../../../../hooks/useFavorites';
+import TopUpModal from '../TopUpModal/TopUpModal';
 
 interface DecodedToken {
     firstName?: string;
@@ -34,6 +35,7 @@ const AccountHeader: React.FC = () => {
     const [adsCount, setAdsCount] = useState<number>(0);
     const [showReviews, setShowReviews] = useState(false);
     const { favoriteIds } = useFavorites();
+    const [showTopUp, setShowTopUp] = useState(false);
 
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
@@ -107,7 +109,7 @@ const AccountHeader: React.FC = () => {
                                 <span className="balance-amount">0 грн</span>
                                 <span className="balance-label">Баланс на сайті</span>
                             </div>
-                            <button className="sidebar-action-btn">Поповнити</button>
+                            <button className="sidebar-action-btn" onClick={() => setShowTopUp(true)}>Поповнити</button>
                         </>
                     )}
                 </div>
@@ -162,6 +164,7 @@ const AccountHeader: React.FC = () => {
             {showReviews && profileData.id !== '0' && (
                 <ReviewsModal userId={profileData.id} onClose={() => setShowReviews(false)} />
             )}
+            {showTopUp && <TopUpModal onClose={() => setShowTopUp(false)} />}
         </>
     );
 };

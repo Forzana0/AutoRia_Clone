@@ -112,11 +112,23 @@ const SearchContent: React.FC = () => {
         const loadCars = async () => {
             setLoading(true);
             try {
-                // Якщо прийшли з пошуку (є state) — показуємо результати пошуку (навіть якщо порожні)
-                if (location.state?.cars !== undefined) {
+                const sp = location.state?.searchParams || {};
+                // Apply pre-filters from navbar
+                if (sp.searchType || sp.carType) {
+                    setFilters(prev => ({
+                        ...prev,
+                        stage: sp.searchType || prev.stage,
+                        transportType: sp.carType || prev.transportType,
+                    }));
+                    const res = await axios.post(`${API}/api/Car/search`, {
+                        searchType: sp.searchType || null,
+                        carType: sp.carType || null,
+                        vinChecked: false,
+                    });
+                    setAllCars(res.data || []);
+                } else if (location.state?.cars !== undefined) {
                     setAllCars(location.state.cars || []);
                 } else {
-                    // Якщо зайшли напряму на /search без пошуку — завантажуємо всі авто
                     const res = await axios.get(`${API}/api/Car`);
                     setAllCars(res.data || []);
                 }

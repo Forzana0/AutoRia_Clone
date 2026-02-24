@@ -13,6 +13,7 @@ import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 import Favorites from './pages/AccountPage/AccountPageComponents/Favorites/Favorites';
 import AboutPage from './pages/AboutPage/AboutPage';
+import HelpPage from './pages/HelpPage/HelpPage';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
 const ScrollToTop: React.FC = () => {
@@ -47,6 +48,7 @@ const App: React.FC = () => {
                 </Route>
 
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/help" element={<HelpPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
             <PagesFooter />
