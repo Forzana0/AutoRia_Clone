@@ -3,6 +3,7 @@ using AutoRia.Data.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
 namespace AutoRia.Data
 {
     public class CarDbContext : IdentityDbContext<UserEntity, RoleEntity, int,
@@ -10,6 +11,7 @@ namespace AutoRia.Data
         IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public CarDbContext(DbContextOptions<CarDbContext> options) : base(options) { }
+
         public DbSet<CarEntity> Cars { get; set; }
         public DbSet<BodyTypeEntity> BodyTypes { get; set; }
         public DbSet<CarBrandEntity> Brands { get; set; }
@@ -22,6 +24,7 @@ namespace AutoRia.Data
         public DbSet<TransportTypeEntity> TransportTypes { get; set; }
         public DbSet<CarPhotoEntity> CarPhotos { get; set; } = null!;
         public DbSet<UserCarEntity> UserCars { get; set; } = null!;
+        public DbSet<UserFavoriteEntity> UserFavorites { get; set; } = null!;
         public DbSet<RegionEntity> Regions { get; set; }
         public DbSet<CityEntity> Cities { get; set; }
         public DbSet<ReviewEntity> Reviews { get; set; } = null!;
@@ -55,13 +58,26 @@ namespace AutoRia.Data
                 .WithMany(c => c.UserCars)
                 .HasForeignKey(uc => uc.CarId);
 
+            // UserFavorites
+            modelBuilder.Entity<UserFavoriteEntity>()
+                .HasKey(uf => new { uf.UserId, uf.CarId });
+            modelBuilder.Entity<UserFavoriteEntity>()
+                .HasOne(uf => uf.User)
+                .WithMany()
+                .HasForeignKey(uf => uf.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserFavoriteEntity>()
+                .HasOne(uf => uf.Car)
+                .WithMany()
+                .HasForeignKey(uf => uf.CarId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<CityEntity>()
                 .HasOne(c => c.Region)
                 .WithMany(r => r.Cities)
                 .HasForeignKey(c => c.RegionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Reviews — no FK constraints to AspNetUsers to avoid cascade issues
             modelBuilder.Entity<ReviewEntity>(r =>
             {
                 r.HasKey(r => r.Id);

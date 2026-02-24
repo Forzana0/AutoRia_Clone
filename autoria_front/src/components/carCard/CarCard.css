@@ -46,9 +46,7 @@
     font-size: 12px;
 }
 
-.car-card-location svg {
-    flex-shrink: 0;
-}
+.car-card-location svg { flex-shrink: 0; }
 
 .car-card-tags {
     display: flex;
@@ -71,7 +69,7 @@
     padding-top: 8px;
     border-top: 1px solid #f3f4f6;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
@@ -86,4 +84,33 @@
     font-size: 13px;
     font-weight: 500;
     color: #9ca3af;
+}
+
+/* Кнопка улюблених — в правому кутку рядка з ціною */
+.car-card-fav-btn {
+    margin-left: auto;
+    background: #f3f4f6;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.car-card-fav-btn:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: #fffbeb;
+}
+
+.car-card-fav-btn.active {
+    background: #1a1a2e;
+    border-color: #1a1a2e;
+    color: #f59e0b;
 }

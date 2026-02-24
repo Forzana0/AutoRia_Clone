@@ -7,6 +7,7 @@ import { RootState } from '../../../../redux/store';
 import { logout } from '../../../../redux/authSlice';
 import axios from 'axios';
 import ReviewsModal from '../../../../components/ReviewsModal/ReviewsModal';
+import { useFavorites } from '../../../../hooks/useFavorites';
 
 interface DecodedToken {
     firstName?: string;
@@ -32,6 +33,7 @@ const AccountHeader: React.FC = () => {
     const navigate = useNavigate();
     const [adsCount, setAdsCount] = useState<number>(0);
     const [showReviews, setShowReviews] = useState(false);
+    const { favoriteIds } = useFavorites();
 
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
@@ -61,7 +63,7 @@ const AccountHeader: React.FC = () => {
         { key: 'ads',           label: 'Список оголошень',  count: adsCount, path: '/account/ads' },
         { key: 'personal',      label: 'Особистий рахунок', count: null,     path: '/account/personal' },
         { key: 'messages',      label: 'Повідомлення',      count: 0,        path: '/account/messages' },
-        { key: 'favorites',     label: 'Улюблене',          count: 0,        path: '/account/favorites' },
+        { key: 'favorites',     label: 'Улюблене',          count: favoriteIds.length, path: '/account/favorites' },
         { key: 'notifications', label: 'Сповіщення',        count: 0,        path: '/account/notifications' },
     ];
 

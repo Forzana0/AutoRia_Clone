@@ -12,6 +12,7 @@ import ProductPage from './pages/ProductPage/ProductPage';
 import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
+import Favorites from "./pages/AccountPage/AccountPageComponents/Favorites/Favorites.tsx";
 
 const ScrollToTop: React.FC = () => {
     const { pathname } = useLocation();
@@ -40,8 +41,9 @@ const App: React.FC = () => {
                     <Route path="edit"          element={<EditAccountPage />} />
                     <Route path="ads"           element={<MyAds />} />
                     <Route path="messages"      element={<div>Повідомлення</div>} />
-                    <Route path="favorites"     element={<div>Улюблене</div>} />
+                    <Route path="favorites" element={<Favorites />} />
                     <Route path="notifications" element={<div>Сповіщення</div>} />
+
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" />} />

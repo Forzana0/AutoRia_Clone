@@ -13,6 +13,7 @@ const MainSearchHeader: React.FC = () => {
     const [query, setQuery] = useState('');
     const [history, setHistory] = useState<string[]>([]);
     const [showHistory, setShowHistory] = useState(false);
+    const mouseInDropdown = React.useRef(false);
 
     useEffect(() => {
         try {
@@ -73,7 +74,7 @@ const MainSearchHeader: React.FC = () => {
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         onFocus={() => setShowHistory(true)}
-                        onBlur={() => setTimeout(() => setShowHistory(false), 150)}
+                        onBlur={() => { if (!mouseInDropdown.current) setShowHistory(false); }}
                         onKeyDown={e => { if (e.key === 'Enter') handleSearch(query); }}
                     />
                     {query && (
@@ -83,7 +84,7 @@ const MainSearchHeader: React.FC = () => {
 
                 {/* Dropdown з історією */}
                 {showHistory && history.length > 0 && !query && (
-                    <div className="hero-history-dropdown">
+                    <div className="hero-history-dropdown" onMouseDown={() => { mouseInDropdown.current = true; }} onMouseUp={() => { mouseInDropdown.current = false; }}>
                         {history.map((item, i) => (
                             <div key={i} className="hero-history-item" onMouseDown={() => handleSearch(item)}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2">
@@ -91,7 +92,7 @@ const MainSearchHeader: React.FC = () => {
                                     <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>
                                 </svg>
                                 <span>{item}</span>
-                                <button className="hero-history-delete" onMouseDown={e => deleteHistory(item, e)}>
+                                <button className="hero-history-delete" onMouseDown={e => { e.preventDefault(); deleteHistory(item, e); }}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                                         <polyline points="3 6 5 6 21 6"/>
                                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

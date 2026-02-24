@@ -128,9 +128,9 @@ const CarSearchForm: React.FC = () => {
 
             {/* Transport type grid */}
             <div className="csf-transport-grid">
-                {transportTypes.map((t) => (
+                {transportTypes.map((t, idx) => (
                     <button
-                        key={t.id}
+                        key={t.id ?? idx}
                         className={`csf-transport-btn ${activeTransport === t.name ? 'active' : ''}`}
                         onClick={() => setActiveTransport(prev => prev === t.name ? '' : t.name)}
                         type="button"
