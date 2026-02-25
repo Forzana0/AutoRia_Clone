@@ -2,13 +2,20 @@
 {
     public class CarSearchRequest
     {
-        public string? CarType { get; set; } // Напр. "Будь-який"
-        public string? Price { get; set; } // Напр. "Всі"
-        public string? Region { get; set; } // Напр. "Київ"
-        public string? SearchType { get; set; } // Напр. "Вживані"
-        public string? SelectedBrand { get; set; } // Напр. "Audi"
-        public string? SelectedModel { get; set; } // Напр. "A3"
-        public bool VinChecked { get; set; } // false
-        public string? Year { get; set; } // Напр. "2024"
+        public string? CarType { get; set; }
+        public string? Price { get; set; }
+        public string? Region { get; set; }
+        public string? SearchType { get; set; }
+        public string? SelectedBrand { get; set; }
+        public string? SelectedModel { get; set; }
+        public string? BodyType { get; set; }
+        public bool VinChecked { get; set; }
+        public string? Year { get; set; }
+        public string? TextQuery { get; set; }
+        public string? FuelType { get; set; }
+        public string? TransmissionType { get; set; }
+        public string? Mileage { get; set; }
+        public string? EngineVolume { get; set; }
+        public string? NumberOfSeats { get; set; }
     }
 }

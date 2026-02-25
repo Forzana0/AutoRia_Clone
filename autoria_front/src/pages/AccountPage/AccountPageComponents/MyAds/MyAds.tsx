@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MyAds.css';
 import { RootState } from '../../../../redux/store';
 import EditAdModal from './EditAdModal';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 
 const API = 'http://localhost:5174';
+const PAGE_SIZE = 5;
 
 interface CarItem {
     id: number;
@@ -24,6 +26,7 @@ const decodeToken = (token: string) => {
 
 const MyAds: React.FC = () => {
     const navigate = useNavigate();
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const tokenFromRedux = useSelector((state: RootState) => state.auth.token);
     const token = tokenFromRedux || localStorage.getItem('token');
     const userId = token ? decodeToken(token)?.id : null;
@@ -32,6 +35,8 @@ const MyAds: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [editingCarId, setEditingCarId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const fetchCars = async () => {
         if (!userId) return;
@@ -50,14 +55,21 @@ const MyAds: React.FC = () => {
 
     useEffect(() => { fetchCars(); }, [userId]);
 
-    const handleDelete = async (carId: number) => {
-        if (!window.confirm('Видалити це оголошення?')) return;
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        const carId = deleteId;
+        setDeleteId(null);
         setDeletingId(carId);
         try {
             await axios.delete(`${API}/api/Car/${carId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setCars(prev => prev.filter(c => c.id !== carId));
+            setCars(prev => {
+                const updated = prev.filter(c => c.id !== carId);
+                const newTotalPages = Math.ceil(updated.length / PAGE_SIZE);
+                if (currentPage > newTotalPages && newTotalPages > 0) setCurrentPage(newTotalPages);
+                return updated;
+            });
         } catch (e) {
             alert('Помилка при видаленні. Спробуйте ще раз.');
             console.error(e);
@@ -66,9 +78,39 @@ const MyAds: React.FC = () => {
         }
     };
 
+    const totalPages = Math.ceil(cars.length / PAGE_SIZE);
+    const paginatedCars = cars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    const handlePageClick = (page: number) => {
+        setCurrentPage(page);
+        wrapperRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' });
+    };
+
+    const getPagesArray = () => {
+        if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+        const pages: (number | '...')[] = [1];
+        if (currentPage > 3) pages.push('...');
+        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+        if (currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+        return pages;
+    };
+
     return (
         <>
-            <div className="my-ads-wrapper">
+            {deleteId && (
+                <ConfirmModal
+                    title="Видалити оголошення?"
+                    message="Це оголошення буде назавжди видалено. Цю дію неможливо скасувати."
+                    confirmText="Так, видалити"
+                    cancelText="Скасувати"
+                    onConfirm={confirmDelete}
+                    onCancel={() => setDeleteId(null)}
+                    danger
+                />
+            )}
+
+            <div className="my-ads-wrapper" ref={wrapperRef}>
                 {loading ? (
                     <p className="my-ads-loading">Завантаження...</p>
                 ) : cars.length === 0 ? (
@@ -81,7 +123,7 @@ const MyAds: React.FC = () => {
                 ) : (
                     <>
                         <div className="my-ads-list">
-                            {cars.map(car => {
+                            {paginatedCars.map(car => {
                                 const title = `${car.carBrand?.name || ''} ${car.carModel?.name || ''} ${car.year || ''}`.trim();
                                 const img = car.photos?.[0]?.name
                                     ? `${API}/images/400_${car.photos[0].name}`
@@ -115,7 +157,7 @@ const MyAds: React.FC = () => {
                                                 </button>
                                                 <button
                                                     className="my-ad-delete-btn"
-                                                    onClick={() => handleDelete(car.id)}
+                                                    onClick={() => setDeleteId(car.id)}
                                                     disabled={deletingId === car.id}
                                                 >
                                                     {deletingId === car.id ? '...' : 'Видалити'}
@@ -126,6 +168,34 @@ const MyAds: React.FC = () => {
                                 );
                             })}
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="my-ads-pagination">
+                                <button
+                                    className="my-ads-page-btn arrow"
+                                    onClick={() => handlePageClick(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                >‹</button>
+
+                                {getPagesArray().map((p, i) =>
+                                    p === '...'
+                                        ? <span key={`d${i}`} className="my-ads-page-dots">...</span>
+                                        : <button
+                                            key={p}
+                                            className={`my-ads-page-btn ${currentPage === p ? 'active' : ''}`}
+                                            onClick={() => handlePageClick(p as number)}
+                                        >{p}</button>
+                                )}
+
+                                <button
+                                    className="my-ads-page-btn arrow"
+                                    onClick={() => handlePageClick(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                >›</button>
+                            </div>
+                        )}
+
                         <div className="my-ads-footer">
                             <button className="my-ads-add-btn" onClick={() => navigate('/post-ad')}>
                                 + Додати оголошення

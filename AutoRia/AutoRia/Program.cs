@@ -22,7 +22,6 @@ builder.Services
     .AddIdentity<UserEntity, RoleEntity>(options =>
     {
         options.Stores.MaxLengthForKeys = 128;
-
         options.Password.RequiredLength = 8;
         options.Password.RequireDigit = false;
         options.Password.RequireNonAlphanumeric = false;
@@ -61,38 +60,26 @@ builder.Services
         };
     });
 
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-
 builder.Services.AddAutoMapper(typeof(AppMapProfile));
 builder.Services.AddTransient<IImageService, ImageService>();
-
-
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddTransient<IImageValidator, ImageValidator>();
-//builder.Services.AddTransient<IExistingEntityCheckerService, ExistingEntityCheckerService>();
-
 builder.Services.AddTransient<IAccountsControllerService, AccountsControllerService>();
-
-
-
 builder.Services.AddTransient<ICarControllerService, CarControllerService>();
-//builder.Services.AddTransient<IPaginationService<PizzaVm, PizzaFilterVm>, PizzaPaginationService>();
-
+builder.Services.AddSingleton<AutoRia.Services.PasswordResetService>();
+builder.Services.AddTransient<AutoRia.Services.EmailService>();
 
 var app = builder.Build();
 
 string imagesDirPath = Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ImagesDir"]);
-
 if (!Directory.Exists(imagesDirPath))
 {
     Directory.CreateDirectory(imagesDirPath);
 }
-
 
 app.UseCors(
     configuration => configuration
@@ -107,7 +94,6 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images"
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -115,9 +101,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.SeedData();
-
 app.Run();

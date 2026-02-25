@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomeContent.css';
-import CarCarousel from './HomeContentComponents/CarCarousel/CarCarousel';
 import CarCard from '../../../../components/carCard/CarCard';
 import axios from 'axios';
 
@@ -15,6 +14,7 @@ interface CarVm {
     transmissionType?: { name: string };
     fuelTypes?: { name: string };
     price?: number;
+    dateCreated?: string;
     photos?: { name: string }[];
 }
 
@@ -43,7 +43,7 @@ const services = [
         title: 'Обране та порівняння',
         description: 'Зручна робота з обраними пропозиціями. Користувачі можуть зберігати оголошення до обраного та порівнювати їх між собою за ключовими параметрами.',
         btnLabel: 'Переглянути обране',
-        route: '/account',
+        route: '/account/favorites',
         requiresAuth: true,
     },
     {
@@ -63,18 +63,18 @@ const HomeContent: React.FC = () => {
     const isLoggedIn = !!localStorage.getItem('token');
 
     const handleAuthNav = (route: string) => {
-        if (isLoggedIn) {
-            navigate(route);
-        } else {
-            navigate('/auth');
-        }
+        if (isLoggedIn) navigate(route);
+        else navigate('/auth');
     };
 
     useEffect(() => {
         const fetchCars = async () => {
             try {
                 const res = await axios.get('http://localhost:5174/api/Car');
-                setCars(res.data || []);
+                const sorted = (res.data || []).sort((a: CarVm, b: CarVm) =>
+                    new Date(b.dateCreated || 0).getTime() - new Date(a.dateCreated || 0).getTime()
+                );
+                setCars(sorted);
             } catch (e) {
                 console.error('Error fetching cars:', e);
             } finally {
@@ -84,12 +84,10 @@ const HomeContent: React.FC = () => {
         fetchCars();
     }, []);
 
-    const topCars = cars.slice(0, 3);
     const latestCars = cars.slice(0, 6);
 
     return (
         <div className="home-content">
-            <CarCarousel cars={topCars.map(mapCarVmToCard)} />
 
             <section className="latest-ads-section">
                 <div className="section-header">

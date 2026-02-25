@@ -9,6 +9,7 @@ using AutoRia.Data;
 using AutoRia.SearchReauestClasses;
 using AutoRia.Services;
 using AutoRia.Services.ControllerServices.Interfaces;
+using AutoRia.Services;
 
 namespace AutoRia.Controllers
 {
@@ -22,6 +23,9 @@ namespace AutoRia.Controllers
         private readonly SignInManager<UserEntity> signInManager;
         private readonly CarDbContext context;
         private readonly IImageService imageService;
+        private readonly IConfiguration configuration;
+        private readonly PasswordResetService passwordResetService;
+        private readonly EmailService emailService;
 
         public AccountsController(
             IJwtTokenService jwtTokenService,
@@ -29,7 +33,10 @@ namespace AutoRia.Controllers
             CarDbContext context,
             SignInManager<UserEntity> signInManager,
             IImageService imageService,
-            UserManager<UserEntity> userManager)
+            UserManager<UserEntity> userManager,
+            IConfiguration configuration,
+            PasswordResetService passwordResetService,
+            EmailService emailService)
         {
             this.jwtTokenService = jwtTokenService;
             this.service = service;
@@ -37,6 +44,9 @@ namespace AutoRia.Controllers
             this.context = context;
             this.imageService = imageService;
             this.signInManager = signInManager;
+            this.configuration = configuration;
+            this.passwordResetService = passwordResetService;
+            this.emailService = emailService;
         }
 
         [HttpPost("logout")]
@@ -80,6 +90,58 @@ namespace AutoRia.Controllers
                 return StatusCode(500, new { Message = "An error occurred during user registration.", Details = ex.Message });
             }
         }
+
+        // ── Google OAuth ──────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> GoogleSignIn([FromBody] GoogleSignInVm model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.Email))
+                    return BadRequest("Email не отримано від Google");
+
+                // Find existing user by email
+                var user = await userManager.FindByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    // Create new user from Google data
+                    user = new UserEntity
+                    {
+                        Email = model.Email,
+                        UserName = model.Email,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        MiddleName = "",
+                        PhoneNumber = "",
+                        EmailConfirmed = true,
+                    };
+
+                    var createResult = await userManager.CreateAsync(user);
+                    if (!createResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                        return BadRequest(new { Message = "Помилка створення акаунту", Details = errors });
+                    }
+
+                    // Ensure role exists and assign
+                    if (!await context.Roles.AnyAsync(r => r.Name == Roles.User))
+                        await context.Roles.AddAsync(new RoleEntity { Name = Roles.User, NormalizedName = Roles.User.ToUpper() });
+
+                    await userManager.AddToRoleAsync(user, Roles.User);
+                }
+
+                var token = await jwtTokenService.CreateTokenAsync(user);
+                await userManager.SetAuthenticationTokenAsync(user, "JWT", "AccessToken", token);
+
+                return Ok(new JwtTokenResponse { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Помилка Google авторизації", Details = ex.Message });
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
@@ -138,11 +200,9 @@ namespace AutoRia.Controllers
                 user.Region = "Вказано не вірно";
             }
 
-            // Нове фото
             if (model.Photo != null)
                 user.Photo = await imageService.SaveImageAsync(model.Photo);
 
-            // Видалення фото
             if (model.DeletePhoto == true)
                 user.Photo = null;
 
@@ -176,7 +236,6 @@ namespace AutoRia.Controllers
             return Ok("Пароль успішно оновлено");
         }
 
-        // DELETE: api/Accounts/DeleteAccount/{userId}
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteAccount(string userId)
         {
@@ -188,7 +247,6 @@ namespace AutoRia.Controllers
             {
                 var userIdInt = int.Parse(userId);
 
-                // 1. Всі CarId цього користувача
                 var userCarIds = await context.UserCars
                     .Where(uc => uc.UserId == userIdInt)
                     .Select(uc => uc.CarId)
@@ -196,7 +254,6 @@ namespace AutoRia.Controllers
 
                 if (userCarIds.Any())
                 {
-                    // 2. Видаляємо фото авто з диску
                     var photos = await context.CarPhotos
                         .Where(p => userCarIds.Contains(p.CarId))
                         .ToListAsync();
@@ -204,20 +261,17 @@ namespace AutoRia.Controllers
                         imageService.DeleteImageIfExists(photo.Name);
                     context.CarPhotos.RemoveRange(photos);
 
-                    // 3. Видаляємо UserCars
                     var userCars = await context.UserCars
                         .Where(uc => uc.UserId == userIdInt)
                         .ToListAsync();
                     context.UserCars.RemoveRange(userCars);
 
-                    // 4. Видаляємо самі авто
                     var cars = await context.Cars
                         .Where(c => userCarIds.Contains(c.Id))
                         .ToListAsync();
                     context.Cars.RemoveRange(cars);
                 }
 
-                // 5. Видаляємо відгуки
                 var reviews = await context.Reviews
                     .Where(r => r.FromUserId == userIdInt || r.ToUserId == userIdInt)
                     .ToListAsync();
@@ -225,11 +279,9 @@ namespace AutoRia.Controllers
 
                 await context.SaveChangesAsync();
 
-                // 6. Фото профілю
                 if (!string.IsNullOrEmpty(user.Photo))
                     imageService.DeleteImageIfExists(user.Photo);
 
-                // 7. Видаляємо користувача через Identity
                 var result = await userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                     return BadRequest(result.Errors);
@@ -241,5 +293,58 @@ namespace AutoRia.Controllers
                 return StatusCode(500, new { Message = "Помилка при видаленні акаунту", Details = ex.Message });
             }
         }
+
+        // ── Password Reset ────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> SendResetCode([FromBody] SendResetCodeVm model)
+        {
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return NotFound("Користувача з таким email не знайдено");
+
+            var code = passwordResetService.GenerateCode(model.Email);
+
+            try
+            {
+                await emailService.SendResetCodeAsync(model.Email, code);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Не вдалося відправити email", Details = ex.Message });
+            }
+
+            return Ok("Код надіслано на email");
+        }
+
+        [HttpPost]
+        public IActionResult VerifyResetCode([FromBody] VerifyResetCodeVm model)
+        {
+            var isValid = passwordResetService.VerifyCode(model.Email, model.Code);
+            if (!isValid)
+                return BadRequest("Невірний або прострочений код");
+
+            return Ok("Код підтверджено");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeVm model)
+        {
+            if (!passwordResetService.VerifyCode(model.Email, model.Code))
+                return BadRequest("Невірний або прострочений код");
+
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return NotFound("Користувача не знайдено");
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await userManager.ResetPasswordAsync(user, token, model.NewPassword);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            passwordResetService.RemoveCode(model.Email);
+            return Ok("Пароль успішно змінено");
+        }
+        // ─────────────────────────────────────────────────────────────────────
     }
 }

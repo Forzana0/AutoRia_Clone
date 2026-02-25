@@ -1,0 +1,116 @@
+.cm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 20, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: cm-fade-in 0.15s ease;
+}
+
+@keyframes cm-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.cm-modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 28px 24px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: cm-slide-up 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes cm-slide-up {
+    from { transform: translateY(24px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.cm-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.cm-icon.danger {
+    background: #fff1f2;
+    color: #ef4444;
+}
+
+.cm-title {
+    font-family: 'Manrope', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1d23;
+    margin: 0;
+}
+
+.cm-message {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+
+.cm-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.cm-cancel-btn {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #374151;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.cm-cancel-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.cm-confirm-btn {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 10px;
+    background: #1a1a2e;
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.cm-confirm-btn.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.cm-confirm-btn:hover { opacity: 0.88; }

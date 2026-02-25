@@ -212,6 +212,37 @@ namespace AutoRia.Services.ControllerServices
         {
             IQueryable<CarEntity> query = _carContext.Cars.AsQueryable();
 
+            // ── Текстовий пошук (з рядка пошуку) ─────────────────────
+            if (!string.IsNullOrWhiteSpace(searchRequest.TextQuery))
+            {
+                var parts = searchRequest.TextQuery.Trim().ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var part in parts)
+                {
+                    var p = part; // closure fix
+                    if (int.TryParse(p, out int yearPart) && yearPart > 1900 && yearPart <= DateTime.Now.Year)
+                    {
+                        query = query.Where(c => c.Year == yearPart);
+                    }
+                    else
+                    {
+                        query = query.Where(c =>
+                            (c.CarBrand != null && c.CarBrand.Name.ToLower().Contains(p)) ||
+                            (c.CarModel != null && c.CarModel.Name.ToLower().Contains(p)));
+                    }
+                }
+
+                var cars2 = await query
+                    .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+                foreach (var car in cars2)
+                    if (car.Photos != null)
+                        car.Photos = car.Photos.OrderBy(p2 => p2.Priority).ToList();
+
+                return cars2;
+            }
+
             if (!string.IsNullOrWhiteSpace(searchRequest.SelectedBrand) &&
                 searchRequest.SelectedBrand != "Будь-який")
             {
@@ -266,6 +297,56 @@ namespace AutoRia.Services.ControllerServices
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(searchRequest.BodyType) &&
+                searchRequest.BodyType != "Будь-який")
+            {
+                query = query.Where(c => c.BodyType != null && c.BodyType.Name == searchRequest.BodyType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.EngineVolume) &&
+                searchRequest.EngineVolume != "Будь-який")
+            {
+                if (float.TryParse(searchRequest.EngineVolume,
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out float vol))
+                {
+                    query = query.Where(c => c.EngineVolume != null && c.EngineVolume.Volume == vol);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.NumberOfSeats) &&
+                searchRequest.NumberOfSeats != "Будь-яка")
+            {
+                if (int.TryParse(searchRequest.NumberOfSeats, out int seats))
+                    query = query.Where(c => c.NumberOfSeats != null && c.NumberOfSeats.Number == seats);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.FuelType) &&
+                searchRequest.FuelType != "Будь-який")
+            {
+                query = query.Where(c => c.FuelTypes != null && c.FuelTypes.Name == searchRequest.FuelType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.TransmissionType) &&
+                searchRequest.TransmissionType != "Будь-який")
+            {
+                query = query.Where(c => c.TransmissionType != null && c.TransmissionType.Name == searchRequest.TransmissionType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchRequest.Mileage) &&
+                searchRequest.Mileage != "Будь-який")
+            {
+                var mParts = searchRequest.Mileage.Split('-');
+                if (mParts.Length == 2)
+                {
+                    if (decimal.TryParse(mParts[0], out decimal mileageFrom) && mileageFrom > 0)
+                        query = query.Where(c => c.Mileage >= mileageFrom);
+                    if (decimal.TryParse(mParts[1], out decimal mileageTo) && mileageTo > 0 && mileageTo < 9999999)
+                        query = query.Where(c => c.Mileage <= mileageTo);
+                }
+            }
+
             if (searchRequest.VinChecked)
             {
                 query = query.Where(c => !string.IsNullOrEmpty(c.VIN));
@@ -274,9 +355,16 @@ namespace AutoRia.Services.ControllerServices
             // Debug — виведи в консоль що фільтрується
             Console.WriteLine($"[Search] Brand={searchRequest.SelectedBrand}, SearchType={searchRequest.SearchType}, Year={searchRequest.Year}, Region={searchRequest.Region}");
 
-            return await query
+            var cars = await query
                 .ProjectTo<CarVm>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+
+            // Сортуємо фото за Priority після отримання даних з БД
+            foreach (var car in cars)
+                if (car.Photos != null)
+                    car.Photos = car.Photos.OrderBy(p => p.Priority).ToList();
+
+            return cars;
         }
     }
 }

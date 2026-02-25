@@ -11,9 +11,11 @@ import PostAdPage from './pages/PostAdPage/PostAdPage';
 import ProductPage from './pages/ProductPage/ProductPage';
 import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
+import Favorites from './pages/AccountPage/AccountPageComponents/Favorites/Favorites';
+import AboutPage from './pages/AboutPage/AboutPage';
+import HelpPage from './pages/HelpPage/HelpPage';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
-// Скролить вгору при кожному переході між сторінками
 const ScrollToTop: React.FC = () => {
     const { pathname } = useLocation();
     useEffect(() => {
@@ -37,14 +39,16 @@ const App: React.FC = () => {
                 <Route path="/seller/:userId"  element={<SellerPage />} />
 
                 <Route path="/account" element={<AccountPage />}>
-                    <Route index                element={<div>Статистика (coming soon)</div>} />
+                    <Route index                element={<MyAds />} />
                     <Route path="edit"          element={<EditAccountPage />} />
                     <Route path="ads"           element={<MyAds />} />
                     <Route path="messages"      element={<div>Повідомлення</div>} />
-                    <Route path="favorites"     element={<div>Улюблене</div>} />
+                    <Route path="favorites"     element={<Favorites />} />
                     <Route path="notifications" element={<div>Сповіщення</div>} />
                 </Route>
 
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/help" element={<HelpPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
             <PagesFooter />

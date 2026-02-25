@@ -510,6 +510,21 @@ namespace AutoRia.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("AutoRia.Data.Entities.Identity.UserFavoriteEntity", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CarId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId", "CarId");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("UserFavorites");
+                });
+
             modelBuilder.Entity("AutoRia.Data.Entities.Identity.UserRoleEntity", b =>
                 {
                     b.Property<int>("UserId")
@@ -848,6 +863,25 @@ namespace AutoRia.Migrations
 
                     b.HasOne("AutoRia.Data.Entities.Identity.UserEntity", "User")
                         .WithMany("Cars")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AutoRia.Data.Entities.Identity.UserFavoriteEntity", b =>
+                {
+                    b.HasOne("AutoRia.Data.Entities.CarEntity", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoRia.Data.Entities.Identity.UserEntity", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
