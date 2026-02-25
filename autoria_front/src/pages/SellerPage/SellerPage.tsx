@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './SellerPage.css';
 
 const API = 'http://localhost:5174';
+const PAGE_SIZE = 5;
 
 interface SellerInfo {
     id: number;
@@ -55,6 +56,7 @@ const StarRating: React.FC<{ value: number; onChange: (v: number) => void }> = (
 const SellerPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const navigate = useNavigate();
+    const listingsRef = useRef<HTMLDivElement>(null);
 
     const [seller, setSeller] = useState<SellerInfo | null>(null);
     const [cars, setCars] = useState<CarItem[]>([]);
@@ -65,6 +67,7 @@ const SellerPage: React.FC = () => {
     const [reviewSent, setReviewSent] = useState(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const token = localStorage.getItem('token');
     const isLoggedIn = !!token;
@@ -97,9 +100,7 @@ const SellerPage: React.FC = () => {
     };
 
     const handleReviewSubmit = async () => {
-        if (!currentUserId || !userId) return;
-        if (starValue === 0) return;
-
+        if (!currentUserId || !userId || starValue === 0) return;
         setSubmitting(true);
         setReviewError(null);
         try {
@@ -124,16 +125,30 @@ const SellerPage: React.FC = () => {
         }
     };
 
+    // Pagination
+    const totalPages = Math.ceil(cars.length / PAGE_SIZE);
+    const paginatedCars = cars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    const handlePageClick = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    };
+
+    const getPagesArray = () => {
+        if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+        const pages: (number | '...')[] = [1];
+        if (currentPage > 3) pages.push('...');
+        for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+        if (currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+        return pages;
+    };
+
     const sellerName = seller
         ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() || seller.userName
         : '—';
-
-    const photoUrl = seller?.photo
-        ? `${API}/images/200_${seller.photo}`
-        : null;
-
+    const photoUrl = seller?.photo ? `${API}/images/200_${seller.photo}` : null;
     const initials = sellerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-
     const isSelf = currentUserId && userId && String(currentUserId) === String(userId);
 
     if (loading) return <div className="sp-loading">Завантаження...</div>;
@@ -155,9 +170,7 @@ const SellerPage: React.FC = () => {
                             <h2 className="sp-name">{sellerName}</h2>
                             <span className="sp-rating">{parseFloat(String(seller.rating ?? '0').replace(',', '.')) || 0}/5 ★</span>
                         </div>
-                        {seller.description && (
-                            <p className="sp-desc">{seller.description}</p>
-                        )}
+                        {seller.description && <p className="sp-desc">{seller.description}</p>}
                     </div>
 
                     <div className="sp-stats">
@@ -174,9 +187,7 @@ const SellerPage: React.FC = () => {
                                 {seller.phoneNumber}
                             </button>
                         )}
-                        <button className="sp-btn sp-btn-outline" disabled>
-                            Відкрити чат
-                        </button>
+                        <button className="sp-btn sp-btn-outline" disabled>Відкрити чат</button>
                         {!isSelf && (
                             <button
                                 className="sp-btn sp-btn-outline"
@@ -189,13 +200,13 @@ const SellerPage: React.FC = () => {
                 </div>
 
                 {/* Right */}
-                <div className="sp-right">
+                <div className="sp-right" ref={listingsRef}>
                     <h3 className="sp-listings-title">Активні оголошення</h3>
                     <div className="sp-listings">
                         {cars.length === 0 ? (
                             <p className="sp-no-listings">Оголошень немає</p>
                         ) : (
-                            cars.map(car => {
+                            paginatedCars.map(car => {
                                 const title = `${car.carBrand?.name || ''} ${car.carModel?.name || ''}`.trim();
                                 const img = car.photos?.[0]?.name
                                     ? `${API}/images/400_${car.photos[0].name}`
@@ -216,23 +227,46 @@ const SellerPage: React.FC = () => {
                                         </div>
                                         <div className="sp-listing-info">
                                             <div className="sp-listing-title">{title}</div>
-                                            {car.city?.name && (
-                                                <div className="sp-listing-city">📍 {car.city.name}</div>
-                                            )}
+                                            {car.city?.name && <div className="sp-listing-city">📍 {car.city.name}</div>}
                                             <div className="sp-listing-tags">
                                                 {tags.map((t, i) => <span key={i} className="sp-tag">{t}</span>)}
                                             </div>
                                         </div>
                                         <div className="sp-listing-price">
-                                            {car.price ? (
-                                                <span className="sp-price-usd">{car.price.toLocaleString()} $</span>
-                                            ) : '—'}
+                                            {car.price ? <span className="sp-price-usd">{car.price.toLocaleString()} $</span> : '—'}
                                         </div>
                                     </div>
                                 );
                             })
                         )}
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="sp-pagination">
+                            <button
+                                className="sp-page-btn arrow"
+                                onClick={() => handlePageClick(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                            >‹</button>
+
+                            {getPagesArray().map((p, i) =>
+                                p === '...'
+                                    ? <span key={`d${i}`} className="sp-page-dots">...</span>
+                                    : <button
+                                        key={p}
+                                        className={`sp-page-btn ${currentPage === p ? 'active' : ''}`}
+                                        onClick={() => handlePageClick(p as number)}
+                                    >{p}</button>
+                            )}
+
+                            <button
+                                className="sp-page-btn arrow"
+                                onClick={() => handlePageClick(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                            >›</button>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -276,14 +310,12 @@ const SellerPage: React.FC = () => {
                             </div>
                         </div>
                         <div className="sp-modal-divider" />
-
                         {reviewSent ? (
                             <div className="sp-review-success">✅ Відгук збережено!</div>
                         ) : (
                             <>
                                 <p className="sp-review-prompt">Оцініть Ваш досвід взаємодії з продавцем в цілому?</p>
                                 <StarRating value={starValue} onChange={setStarValue} />
-
                                 {starValue > 0 && (
                                     <>
                                         <p className="sp-review-prompt" style={{ marginTop: 16 }}>Поділіться своїм досвідом</p>
