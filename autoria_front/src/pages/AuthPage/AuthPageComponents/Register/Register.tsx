@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import { login } from '../../../../redux/authSlice';
 import api from '../../../../http';
 
@@ -13,15 +14,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        firstName: '',
-        lastName: '',
-        middleName: '',
-        userName: '',
-        email: '',
-        phoneNumber: '',
-        city: '',
-        password: '',
-        confirm: '',
+        firstName: '', lastName: '', middleName: '', userName: '',
+        email: '', phoneNumber: '', city: '', password: '', confirm: '',
     });
     const [photo, setPhoto] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -29,6 +23,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
 
     const change = (field: string, val: string) => {
         setForm(f => ({ ...f, [field]: val }));
@@ -91,20 +86,9 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
             if (photo) formData.append('Image', photo);
 
             const response = await api.post('/api/Accounts/Registration', formData);
-
-            // ASP.NET Core повертає camelCase: token, firstName, lastName
             const token: string = response.data.token;
             localStorage.setItem('token', token);
-            dispatch(login({
-                user: {
-                    name: `${form.firstName} ${form.lastName}`,
-                    id: 0,
-                    location: form.city,
-                    rating: 0,
-                    imageUrl: [],
-                },
-                token,
-            }));
+            dispatch(login(token));
             navigate('/');
         } catch (err: any) {
             const msg = err?.response?.data?.Message || err?.response?.data || 'Помилка реєстрації';
@@ -113,6 +97,38 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
             setLoading(false);
         }
     };
+
+    // Google OAuth
+    const googleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setGoogleLoading(true);
+            try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                });
+                const userInfo = await userInfoRes.json();
+
+                const response = await api.post('/api/Accounts/GoogleSignIn', {
+                    idToken: tokenResponse.access_token,
+                    email: userInfo.email,
+                    firstName: userInfo.given_name || '',
+                    lastName: userInfo.family_name || '',
+                });
+
+                const token: string = response.data.token;
+                localStorage.setItem('token', token);
+                dispatch(login(token));
+                navigate('/');
+            } catch (err: any) {
+                setErrors({ general: 'Помилка реєстрації через Google' });
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        onError: () => {
+            setErrors({ general: 'Google авторизацію скасовано' });
+        },
+    });
 
     const EyeIcon = ({ show }: { show: boolean }) => show ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -132,7 +148,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
             <h2 className="auth-title">Створіть свій акаунт на сайті!</h2>
 
             <form onSubmit={handleSubmit} noValidate>
-
                 {/* Фото профілю */}
                 <div className="auth-field">
                     <label>Фото профілю</label>
@@ -159,12 +174,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                             cursor: 'pointer', color: '#333',
                         }}>
                             {photo ? 'Змінити фото' : '+ Завантажити'}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                onChange={handlePhotoChange}
-                            />
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
                         </label>
                         {photo && (
                             <span style={{ fontSize: 12, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
@@ -195,7 +205,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     </div>
                 </div>
 
-                {/* По батькові */}
                 <div className="auth-field">
                     <label>По батькові <span style={{ color: '#aaa', fontSize: 11 }}>(необов'язково)</span></label>
                     <div className="auth-input-wrap">
@@ -204,7 +213,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     </div>
                 </div>
 
-                {/* Нікнейм */}
                 <div className="auth-field">
                     <label>Нікнейм</label>
                     <div className="auth-input-wrap">
@@ -214,7 +222,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     {errors.userName && <span className="auth-error-text">{errors.userName}</span>}
                 </div>
 
-                {/* Email */}
                 <div className="auth-field">
                     <label>Email</label>
                     <div className="auth-input-wrap">
@@ -224,7 +231,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     {errors.email && <span className="auth-error-text">{errors.email}</span>}
                 </div>
 
-                {/* Телефон + Місто */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px' }}>
                     <div className="auth-field">
                         <label>Телефон</label>
@@ -245,7 +251,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     </div>
                 </div>
 
-                {/* Пароль */}
                 <div className="auth-field">
                     <label>Пароль</label>
                     <div className="auth-input-wrap">
@@ -267,7 +272,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     {errors.password && <span className="auth-error-text">{errors.password}</span>}
                 </div>
 
-                {/* Підтвердження пароля */}
                 <div className="auth-field">
                     <label>Підтвердь пароль</label>
                     <div className="auth-input-wrap">
@@ -281,7 +285,6 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                     {errors.confirm && <span className="auth-error-text">{errors.confirm}</span>}
                 </div>
 
-                {/* Загальна помилка */}
                 {errors.general && (
                     <div style={{ background: '#fff5f5', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', marginBottom: 12 }}>
                         <span className="auth-error-text">{errors.general}</span>
@@ -290,7 +293,22 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
 
                 <p className="auth-social-label">Або зареєструйтесь через</p>
                 <div className="auth-socials">
-                    <button type="button" className="social-btn google">G</button>
+                    <button
+                        type="button"
+                        className="social-btn google"
+                        onClick={() => googleLogin()}
+                        disabled={googleLoading}
+                        title="Зареєструватись через Google"
+                    >
+                        {googleLoading ? '...' : (
+                            <svg width="18" height="18" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                        )}
+                    </button>
                     <button type="button" className="social-btn apple">🍎</button>
                     <button type="button" className="social-btn facebook">f</button>
                 </div>

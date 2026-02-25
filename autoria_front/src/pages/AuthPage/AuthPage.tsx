@@ -12,6 +12,7 @@ type Screen = 'login' | 'register' | 'forgot' | 'code' | 'newpass' | 'success';
 const AuthPage: React.FC = () => {
     const [screen, setScreen] = useState<Screen>('login');
     const [resetEmail, setResetEmail] = useState('');
+    const [resetCode, setResetCode] = useState('');
 
     const renderScreen = () => {
         switch (screen) {
@@ -34,20 +35,23 @@ const AuthPage: React.FC = () => {
             case 'code':
                 return (
                     <EnterCode
+                        email={resetEmail}
                         onBack={() => setScreen('forgot')}
-                        onNext={() => setScreen('newpass')}
-                        onResend={() => { /* TODO: resend code */ }}
+                        onNext={(code) => { setResetCode(code); setScreen('newpass'); }}
+                        onResend={() => {}}
                     />
                 );
             case 'newpass':
                 return (
                     <NewPassword
+                        email={resetEmail}
+                        code={resetCode}
                         onBack={() => setScreen('code')}
                         onSuccess={() => setScreen('success')}
                     />
                 );
             case 'success':
-                return <PasswordSuccess />;
+                return <PasswordSuccess onBack={() => setScreen('login')} />;
             default:
                 return null;
         }
