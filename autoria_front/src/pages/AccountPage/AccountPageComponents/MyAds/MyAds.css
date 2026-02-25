@@ -179,3 +179,57 @@
 .my-ads-add-btn:hover {
     opacity: 0.85;
 }
+
+/* Pagination */
+.my-ads-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 0 8px;
+}
+
+.my-ads-page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.my-ads-page-btn:hover:not(:disabled) {
+    background: #f0f2f9;
+    border-color: #3b5bdb;
+    color: #3b5bdb;
+}
+
+.my-ads-page-btn.active {
+    background: #1e2a4a;
+    border-color: #1e2a4a;
+    color: #fff;
+}
+
+.my-ads-page-btn.arrow {
+    font-size: 18px;
+    color: #6b7280;
+}
+
+.my-ads-page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.my-ads-page-dots {
+    color: #9ca3af;
+    font-size: 14px;
+    padding: 0 4px;
+}

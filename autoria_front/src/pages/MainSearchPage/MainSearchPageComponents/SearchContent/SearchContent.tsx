@@ -151,14 +151,11 @@ const SearchContent: React.FC = () => {
     });
 
     const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-    const paginatedCars = sorted.slice(0, currentPage * PAGE_SIZE);
-    const hasMore = currentPage * PAGE_SIZE < sorted.length;
-
-    const handleShowMore = () => setCurrentPage(p => p + 1);
+    const paginatedCars = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     const handlePageClick = (page: number) => {
         setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     };
 
     const handleFilterChange = (key: keyof FilterState, value: string) => {
@@ -263,15 +260,6 @@ const SearchContent: React.FC = () => {
                     {paginatedCars.map(car => (
                         <SearchCarCard key={car.id} {...(car as any)} />
                     ))}
-                </div>
-            )}
-
-            {/* Show more button */}
-            {hasMore && !loading && (
-                <div className="sc-show-more">
-                    <button className="sc-show-more-btn" onClick={handleShowMore}>
-                        Показати ще
-                    </button>
                 </div>
             )}
 
