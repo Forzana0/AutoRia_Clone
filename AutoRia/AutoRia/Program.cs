@@ -83,9 +83,10 @@ if (!Directory.Exists(imagesDirPath))
 
 app.UseCors(
     configuration => configuration
-        .AllowAnyOrigin()
+        .WithOrigins("http://localhost:5173")
         .AllowAnyHeader()
         .AllowAnyMethod()
+        .AllowCredentials()
 );
 
 app.UseStaticFiles(new StaticFileOptions
