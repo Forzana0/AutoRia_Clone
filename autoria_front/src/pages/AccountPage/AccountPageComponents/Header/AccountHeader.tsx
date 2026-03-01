@@ -36,6 +36,7 @@ const AccountHeader: React.FC = () => {
     const [showReviews, setShowReviews] = useState(false);
     const { favoriteIds } = useFavorites();
     const [showTopUp, setShowTopUp] = useState(false);
+    const [balance, setBalance] = useState<number>(0);
 
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
@@ -61,12 +62,22 @@ const AccountHeader: React.FC = () => {
         fetchAdsCount();
     }, [profileData.id]);
 
+    // Load balance from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem(`balance_${profileData.id}`);
+        if (saved) setBalance(Number(saved));
+    }, [profileData.id]);
+
+    const handleTopUpSuccess = (amount: number) => {
+        const newBalance = balance + amount;
+        setBalance(newBalance);
+        localStorage.setItem(`balance_${profileData.id}`, String(newBalance));
+    };
+
     const NAV_ITEMS = [
-        { key: 'ads',           label: 'Список оголошень',  count: adsCount, path: '/account/ads' },
-        { key: 'personal',      label: 'Особистий рахунок', count: null,     path: '/account/personal' },
-        { key: 'messages',      label: 'Повідомлення',      count: 0,        path: '/account/messages' },
-        { key: 'favorites',     label: 'Улюблене',          count: favoriteIds.length, path: '/account/favorites' },
-        { key: 'notifications', label: 'Сповіщення',        count: 0,        path: '/account/notifications' },
+        { key: 'ads',       label: 'Список оголошень', count: adsCount,            path: '/account/ads' },
+        { key: 'favorites', label: 'Улюблене',         count: favoriteIds.length,  path: '/account/favorites' },
+        { key: 'messages',  label: 'Повідомлення',     count: 0,                   path: '/account/messages' },
     ];
 
     const isActive = (path: string) => location.pathname === path;
@@ -106,7 +117,7 @@ const AccountHeader: React.FC = () => {
                     {!collapsed && (
                         <>
                             <div className="balance-info">
-                                <span className="balance-amount">0 грн</span>
+                                <span className="balance-amount">{balance} грн</span>
                                 <span className="balance-label">Баланс на сайті</span>
                             </div>
                             <button className="sidebar-action-btn" onClick={() => setShowTopUp(true)}>Поповнити</button>
@@ -164,7 +175,12 @@ const AccountHeader: React.FC = () => {
             {showReviews && profileData.id !== '0' && (
                 <ReviewsModal userId={profileData.id} onClose={() => setShowReviews(false)} />
             )}
-            {showTopUp && <TopUpModal onClose={() => setShowTopUp(false)} />}
+            {showTopUp && (
+                <TopUpModal
+                    onClose={() => setShowTopUp(false)}
+                    onSuccess={handleTopUpSuccess}
+                />
+            )}
         </>
     );
 };

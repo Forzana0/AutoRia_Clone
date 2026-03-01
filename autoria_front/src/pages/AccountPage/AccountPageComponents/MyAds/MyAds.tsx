@@ -83,7 +83,7 @@ const MyAds: React.FC = () => {
 
     const handlePageClick = (page: number) => {
         setCurrentPage(page);
-        wrapperRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     };
 
     const getPagesArray = () => {

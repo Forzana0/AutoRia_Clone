@@ -3,9 +3,10 @@ import './TopUpModal.css';
 
 interface Props {
     onClose: () => void;
+    onSuccess?: (amount: number) => void;
 }
 
-const TopUpModal: React.FC<Props> = ({ onClose }) => {
+const TopUpModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');
     const [cvv, setCvv] = useState('');
@@ -34,6 +35,7 @@ const TopUpModal: React.FC<Props> = ({ onClose }) => {
     const handleSubmit = () => {
         if (!cardNumber || !expiry || !cvv || !amount) return;
         setSuccess(true);
+        onSuccess?.(Number(amount));
     };
 
     const displayNumber = cardNumber || '•••• •••• •••• ••••';
@@ -55,7 +57,6 @@ const TopUpModal: React.FC<Props> = ({ onClose }) => {
                     <>
                         <h2 className="tum-title">Поповнити баланс</h2>
 
-                        {/* Card preview */}
                         <div className={`tum-card-wrap ${flipped ? 'flipped' : ''}`}>
                             <div className="tum-card tum-card-front">
                                 <div className="tum-card-shine" />
@@ -89,7 +90,6 @@ const TopUpModal: React.FC<Props> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        {/* Form */}
                         <div className="tum-form">
                             <div className="tum-field">
                                 <label>Номер картки</label>
