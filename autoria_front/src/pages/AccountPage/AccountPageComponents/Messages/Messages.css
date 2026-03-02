@@ -1,0 +1,315 @@
+.msg-wrapper {
+    display: flex;
+    height: calc(100vh - 120px);
+    background: #f0f2f9;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+/* ── Sidebar (conversations) ── */
+.msg-sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+.msg-sidebar-header {
+    padding: 20px 20px 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.msg-sidebar-header h3 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e2a4a;
+    margin: 0;
+}
+
+.msg-conversations {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.msg-no-convs {
+    padding: 32px 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+}
+
+.msg-conv-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.15s;
+}
+
+.msg-conv-item:hover { background: #f8f9fc; }
+.msg-conv-item.active { background: #eef0f8; }
+
+.msg-conv-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #1e2a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+}
+
+.msg-conv-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.msg-conv-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.msg-conv-name {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e2a4a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msg-conv-last {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    color: #9ca3af;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.msg-conv-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.msg-conv-time {
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: 'Manrope', sans-serif;
+}
+
+.msg-conv-badge {
+    background: #3b5bdb;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    border-radius: 10px;
+    padding: 1px 7px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ── Chat Window ── */
+.msg-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fc;
+    min-width: 0;
+}
+
+.msg-chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #9ca3af;
+    font-family: 'Manrope', sans-serif;
+}
+
+.msg-chat-empty-icon { font-size: 48px; }
+
+.msg-chat-empty p { font-size: 15px; }
+
+.msg-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.msg-chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.msg-chat-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1e2a4a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.msg-chat-username {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e2a4a;
+}
+
+/* ── Messages ── */
+.msg-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.msg-loading,
+.msg-no-messages {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    font-family: 'Manrope', sans-serif;
+    padding: 24px 0;
+}
+
+.msg-bubble-wrap {
+    display: flex;
+    margin-bottom: 6px;
+}
+
+.msg-bubble-wrap.mine  { justify-content: flex-end; }
+.msg-bubble-wrap.theirs { justify-content: flex-start; }
+
+.msg-bubble {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    word-break: break-word;
+}
+
+.msg-bubble.mine {
+    background: #1e2a4a;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.msg-bubble.theirs {
+    background: #fff;
+    color: #1e2a4a;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.msg-text {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.msg-time {
+    font-size: 10px;
+    opacity: 0.6;
+    font-family: 'Manrope', sans-serif;
+    align-self: flex-end;
+}
+
+.msg-read {
+    font-size: 10px;
+    opacity: 0.7;
+    align-self: flex-end;
+    margin-left: 4px;
+    color: #a5b4fc;
+}
+
+/* ── Input ── */
+.msg-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+}
+
+.msg-input {
+    flex: 1;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    color: #1e2a4a;
+    resize: none;
+    outline: none;
+    min-height: 42px;
+    max-height: 120px;
+    transition: border-color 0.15s;
+}
+
+.msg-input:focus { border-color: #3b5bdb; }
+
+.msg-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #1e2a4a;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.msg-send-btn:hover:not(:disabled) { background: #3b5bdb; }
+.msg-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.msg-empty {
+    padding: 40px;
+    text-align: center;
+    color: #9ca3af;
+    font-family: 'Manrope', sans-serif;
+}

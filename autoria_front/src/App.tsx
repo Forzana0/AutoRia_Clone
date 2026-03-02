@@ -12,6 +12,7 @@ import ProductPage from './pages/ProductPage/ProductPage';
 import SellerPage from './pages/SellerPage/SellerPage';
 import MyAds from './pages/AccountPage/AccountPageComponents/MyAds/MyAds';
 import Favorites from './pages/AccountPage/AccountPageComponents/Favorites/Favorites';
+import Messages from './pages/AccountPage/AccountPageComponents/Messages/Messages';
 import AboutPage from './pages/AboutPage/AboutPage';
 import HelpPage from './pages/HelpPage/HelpPage';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
@@ -42,14 +43,13 @@ const App: React.FC = () => {
                     <Route index                element={<MyAds />} />
                     <Route path="edit"          element={<EditAccountPage />} />
                     <Route path="ads"           element={<MyAds />} />
-                    <Route path="messages"      element={<div>Повідомлення</div>} />
+                    <Route path="messages"      element={<Messages />} />
                     <Route path="favorites"     element={<Favorites />} />
-                    <Route path="notifications" element={<div>Сповіщення</div>} />
                 </Route>
 
                 <Route path="/about" element={<AboutPage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/help"  element={<HelpPage />} />
+                <Route path="*"      element={<Navigate to="/" />} />
             </Routes>
             <PagesFooter />
         </BrowserRouter>

@@ -33,6 +33,7 @@ const AccountHeader: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [adsCount, setAdsCount] = useState<number>(0);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
     const [showReviews, setShowReviews] = useState(false);
     const { favoriteIds } = useFavorites();
     const [showTopUp, setShowTopUp] = useState(false);
@@ -62,6 +63,23 @@ const AccountHeader: React.FC = () => {
         fetchAdsCount();
     }, [profileData.id]);
 
+    useEffect(() => {
+        const fetchUnread = async () => {
+            if (!profileData.id || profileData.id === '0') return;
+            try {
+                const res = await axios.get(`http://localhost:5174/api/Chat/GetConversations/${profileData.id}`);
+                const total = (res.data as any[]).reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
+                setUnreadCount(total);
+            } catch {
+                setUnreadCount(0);
+            }
+        };
+        fetchUnread();
+        // Оновлювати кожні 15 секунд
+        const interval = setInterval(fetchUnread, 15000);
+        return () => clearInterval(interval);
+    }, [profileData.id]);
+
     // Load balance from localStorage
     useEffect(() => {
         const saved = localStorage.getItem(`balance_${profileData.id}`);
@@ -77,7 +95,7 @@ const AccountHeader: React.FC = () => {
     const NAV_ITEMS = [
         { key: 'ads',       label: 'Список оголошень', count: adsCount,            path: '/account/ads' },
         { key: 'favorites', label: 'Улюблене',         count: favoriteIds.length,  path: '/account/favorites' },
-        { key: 'messages',  label: 'Повідомлення',     count: 0,                   path: '/account/messages' },
+        { key: 'messages',  label: 'Повідомлення',     count: unreadCount,         path: '/account/messages' },
     ];
 
     const isActive = (path: string) => location.pathname === path;

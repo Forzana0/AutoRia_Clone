@@ -125,6 +125,11 @@ const SellerPage: React.FC = () => {
         }
     };
 
+    const goToChat = () => {
+        if (!isLoggedIn) { navigate('/auth'); return; }
+        navigate(`/account/messages?with=${userId}`);
+    };
+
     // Pagination
     const totalPages = Math.ceil(cars.length / PAGE_SIZE);
     const paginatedCars = cars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -187,7 +192,9 @@ const SellerPage: React.FC = () => {
                                 {seller.phoneNumber}
                             </button>
                         )}
-                        <button className="sp-btn sp-btn-outline" disabled>Відкрити чат</button>
+                        <button className="sp-btn sp-btn-outline" onClick={goToChat}>
+                            Відкрити чат
+                        </button>
                         {!isSelf && (
                             <button
                                 className="sp-btn sp-btn-outline"
@@ -241,7 +248,6 @@ const SellerPage: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="sp-pagination">
                             <button
@@ -249,7 +255,6 @@ const SellerPage: React.FC = () => {
                                 onClick={() => handlePageClick(Math.max(1, currentPage - 1))}
                                 disabled={currentPage === 1}
                             >‹</button>
-
                             {getPagesArray().map((p, i) =>
                                 p === '...'
                                     ? <span key={`d${i}`} className="sp-page-dots">...</span>
@@ -259,7 +264,6 @@ const SellerPage: React.FC = () => {
                                         onClick={() => handlePageClick(p as number)}
                                     >{p}</button>
                             )}
-
                             <button
                                 className="sp-page-btn arrow"
                                 onClick={() => handlePageClick(Math.min(totalPages, currentPage + 1))}
@@ -290,7 +294,9 @@ const SellerPage: React.FC = () => {
                                 {seller.phoneNumber}
                             </a>
                         )}
-                        <button className="sp-btn sp-btn-outline" disabled>Написати в чат</button>
+                        <button className="sp-btn sp-btn-outline" onClick={() => { setModal('none'); goToChat(); }}>
+                            Написати в чат
+                        </button>
                     </div>
                 </div>
             )}
