@@ -28,6 +28,7 @@ namespace AutoRia.Data
         public DbSet<RegionEntity> Regions { get; set; }
         public DbSet<CityEntity> Cities { get; set; }
         public DbSet<ReviewEntity> Reviews { get; set; } = null!;
+        public DbSet<ChatMessageEntity> ChatMessages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,7 +59,6 @@ namespace AutoRia.Data
                 .WithMany(c => c.UserCars)
                 .HasForeignKey(uc => uc.CarId);
 
-            // UserFavorites
             modelBuilder.Entity<UserFavoriteEntity>()
                 .HasKey(uf => new { uf.UserId, uf.CarId });
             modelBuilder.Entity<UserFavoriteEntity>()
@@ -83,6 +83,13 @@ namespace AutoRia.Data
                 r.HasKey(r => r.Id);
                 r.Property(r => r.Stars).IsRequired();
                 r.Property(r => r.DateCreated).IsRequired();
+            });
+
+            modelBuilder.Entity<ChatMessageEntity>(m =>
+            {
+                m.HasKey(m => m.Id);
+                m.Property(m => m.Text).IsRequired();
+                m.Property(m => m.SentAt).IsRequired();
             });
         }
     }

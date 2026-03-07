@@ -1,5 +1,6 @@
 using AutoRia.Data;
 using AutoRia.Data.Entities.Identity;
+using AutoRia.Hubs;
 using AutoRia.Services;
 using AutoRia.Services.ControllerServices;
 using AutoRia.Services.ControllerServices.Interfaces;
@@ -58,8 +59,21 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero
         };
+        // SignalR потребує токен через query string
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
     });
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -77,9 +91,7 @@ var app = builder.Build();
 
 string imagesDirPath = Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ImagesDir"]);
 if (!Directory.Exists(imagesDirPath))
-{
     Directory.CreateDirectory(imagesDirPath);
-}
 
 app.UseCors(
     configuration => configuration
@@ -101,7 +113,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
+
 app.SeedData();
 app.Run();
