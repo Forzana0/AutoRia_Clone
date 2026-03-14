@@ -15,6 +15,7 @@ import Favorites from './pages/AccountPage/AccountPageComponents/Favorites/Favor
 import Messages from './pages/AccountPage/AccountPageComponents/Messages/Messages';
 import AboutPage from './pages/AboutPage/AboutPage';
 import HelpPage from './pages/HelpPage/HelpPage';
+import AdminPage from './pages/AdminPage/AdminPage';
 import SearchContent from './pages/MainSearchPage/MainSearchPageComponents/SearchContent/SearchContent';
 
 const ScrollToTop: React.FC = () => {
@@ -49,6 +50,7 @@ const App: React.FC = () => {
 
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/help"  element={<HelpPage />} />
+                <Route path="/admin" element={<AdminPage />} />
                 <Route path="*"      element={<Navigate to="/" />} />
             </Routes>
             <PagesFooter />
