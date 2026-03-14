@@ -39,6 +39,9 @@ const AccountHeader: React.FC = () => {
     const [showTopUp, setShowTopUp] = useState(false);
     const [balance, setBalance] = useState<number>(0);
 
+    const roles = token ? decodeToken(token)?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decodeToken(token)?.role : null;
+    const isAdmin = Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin';
+
     let profileData = { name: 'Невідомий користувач', id: '0' };
     if (token) {
         const decoded = decodeToken(token);
@@ -127,6 +130,16 @@ const AccountHeader: React.FC = () => {
                         >
                             {collapsed ? '⚙️' : 'Налаштування'}
                         </button>
+                        {isAdmin && (
+                            <button
+                                className="tab-btn"
+                                onClick={() => navigate('/admin')}
+                                title="Адмін панель"
+                                style={{ background: '#1e2a4a', color: '#fff' }}
+                            >
+                                {collapsed ? '👑' : '👑 Адмін'}
+                            </button>
+                        )}
                     </div>
                 </div>
 

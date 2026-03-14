@@ -103,12 +103,6 @@ const Navbar: React.FC = () => {
                     <li><span>|</span></li>
                     <li><a href="/about" onClick={e => { e.preventDefault(); navigate('/about'); }}>Про Нас</a></li>
                 </ul>
-
-                <div className="lang-switcher">
-                    <button className={`lang-btn ${lang === 'UA' ? 'active' : ''}`} onClick={() => setLang('UA')}>UA</button>
-                    <span className="lang-divider">/</span>
-                    <button className={`lang-btn ${lang === 'ENG' ? 'active' : ''}`} onClick={() => setLang('ENG')}>ENG</button>
-                </div>
             </div>
         </nav>
     );
